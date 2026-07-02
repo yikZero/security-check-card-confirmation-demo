@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>交易确认页安全检查对照 Demo</title>
+    <link rel="stylesheet" href="./security-check-card-confirmation-demo.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="page-header">
+        <p class="kicker">QA 对照</p>
+        <h1>交易确认页：改动前后对照</h1>
+        <p>
+          用于对比旧版确认页与新版 Security Checks / Transaction Preview
+          布局的静态场景矩阵。
+        </p>
+        <p class="note">
+          Security Checks 会收拢重复的安全提示内容。地址 badge
+          和底部风险确认仍保留在原位置。只有 warning / critical 地址 tag
+          会汇总进卡片。
+        </p>
+      </header>
+
+      <section class="rules">
+        <h2>Security Checks 展示规则</h2>
+        <div class="rule-grid">
+          <div>
+            <h3>什么时候展示</h3>
+            <p>
+              有安全项时展示。没有安全项时，等站点与本次操作分析都有结果后才展示
+              No issues。
+            </p>
+          </div>
+          <div>
+            <h3>默认展开</h3>
+            <p>
+              有 critical、warning，或非站点类 unverified / unknown
+              项时默认展开，例如 raw message data。
+            </p>
+          </div>
+          <div>
+            <h3>默认收起</h3>
+            <p>
+              只有站点 Unverified 时默认收起。用户仍能在卡片右侧看到 Unverified
+              badge。
+            </p>
+          </div>
+          <div>
+            <h3>保留原位置</h3>
+            <p>
+              地址 badge 留在地址行。底部风险确认留在 footer。Transaction
+              Preview 不合并进 Security Checks。
+            </p>
+          </div>
+          <div>
+            <h3>右侧摘要计数</h3>
+            <p>
+              critical 显示为 Risk，warning 显示为
+              Warning。两者同时存在时分开计数，不把 warning 算进 Risk。
+            </p>
+          </div>
+          <div>
+            <h3>异步状态</h3>
+            <p>
+              站点或本次操作分析未返回时不展示卡片，也不提前显示 No issues。
+              后续异步出现 warning / critical 时自动展开。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <details class="mapping-card coverage-card">
+        <summary>QA 覆盖清单</summary>
+        <p>用于测试核对。日常看下面 8 个场景即可。</p>
+        <div class="mapping-table">
+          <div class="mapping-row mapping-head">
+            <span>信息来源</span>
+            <span>状态</span>
+            <span>展示方式</span>
+            <span>对应场景</span>
+          </div>
+          <div class="mapping-row">
+            <span>站点安全：Security</span>
+            <span class="badge success">No issue</span>
+            <span>不生成 finding；无其他问题时显示 No issues</span>
+            <span>场景 1</span>
+          </div>
+          <div class="mapping-row">
+            <span>站点或操作分析未返回</span>
+            <span class="badge info">Pending</span>
+            <span>不展示卡片，不提前显示 No issues</span>
+            <span>规则覆盖 / 场景 1 说明</span>
+          </div>
+          <div class="mapping-row">
+            <span>站点安全：Unverified</span>
+            <span class="badge info">Unverified</span>
+            <span>site-only 默认收起</span>
+            <span>场景 2</span>
+          </div>
+          <div class="mapping-row">
+            <span>站点安全：Medium / High</span>
+            <span class="badge warning">Warning</span>
+            <span>Medium 为 warning，High 为 Risk；默认展开</span>
+            <span>场景 5</span>
+          </div>
+          <div class="mapping-row">
+            <span>交易分析：parser alert / confirmation required</span>
+            <span class="badge warning">Warning</span>
+            <span>进入 Transaction Analysis；默认展开</span>
+            <span>场景 3</span>
+          </div>
+          <div class="mapping-row">
+            <span>交易分析：custom hex data</span>
+            <span class="badge warning">Warning</span>
+            <span>进入 Transaction Analysis；提交前原弹窗保留</span>
+            <span>同场景 3 规则</span>
+          </div>
+          <div class="mapping-row">
+            <span>签名分析：parser alert / confirmation required</span>
+            <span class="badge warning">Warning</span>
+            <span>进入 Signature Analysis；footer checkbox 仍由原逻辑控制</span>
+            <span>场景 4</span>
+          </div>
+          <div class="mapping-row">
+            <span>签名分析：raw data fallback</span>
+            <span class="badge info">Unverified</span>
+            <span>非 site unknown，默认展开</span>
+            <span>场景 6</span>
+          </div>
+          <div class="mapping-row">
+            <span
+              >签名分析：typed data / order / permit / risky raw signing</span
+            >
+            <span class="badge critical">Mixed</span>
+            <span>按签名类型映射；真实单笔只命中一种</span>
+            <span>规则覆盖</span>
+          </div>
+          <div class="mapping-row">
+            <span>地址 tag：warning / critical</span>
+            <span class="badge warning">Warning</span>
+            <span>卡片摘要 + 地址行 badge 保留；多地址按 Risk 优先</span>
+            <span>场景 3 / 5</span>
+          </div>
+          <div class="mapping-row">
+            <span>地址 tag：info / success</span>
+            <span class="badge info">Info</span>
+            <span>只留在地址行，不进入 Security Checks</span>
+            <span>规则覆盖</span>
+          </div>
+          <div class="mapping-row">
+            <span>交易模拟资产变化</span>
+            <span class="badge info">Preview</span>
+            <span>独立 Transaction Preview；主页面展示全部资产变化</span>
+            <span>场景 1</span>
+          </div>
+        </div>
+      </details>
+
+      <section class="scenario">
+        <div class="scenario-head">
+          <div>
+            <p class="kicker">场景 1</p>
+            <h2>Swap，无安全问题</h2>
+          </div>
+          <p>
+            站点与交易检查都有结果后，展示无风险状态；未返回结果前不展示该卡片。
+          </p>
+        </div>
+
+        <div class="compare-grid">
+          <article class="compare-panel">
+            <div class="compare-label">改动前</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <div class="simulation-card old-simulation">
+                <div class="card-head">
+                  <h4>Simulation results</h4>
+                  <span class="signguard">SignGuard</span>
+                </div>
+                <div class="asset-row">
+                  <span class="coin eth">ETH</span>
+                  <strong>-0.0001 ETH</strong>
+                </div>
+                <div class="asset-row success">
+                  <span class="coin usdt">USDT</span>
+                  <strong>+0.158515 USDT</strong>
+                </div>
+              </div>
+
+              <div class="details">
+                <div class="field">
+                  <span class="label">Network</span>
+                  <div class="value-row">
+                    <span class="coin eth small">ETH</span>
+                    <strong>Ethereum</strong>
+                  </div>
+                </div>
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                  <span class="pill success">Wallet 2 / Account #2</span>
+                </div>
+              </div>
+
+              <div class="footer">
+                <div>
+                  <span class="label">Est. network fee · Normal</span>
+                  <strong>0.00002939 ETH ($0.05)</strong>
+                </div>
+                <div class="actions">
+                  <button class="ghost">Cancel</button>
+                  <button class="primary">Confirm</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="compare-panel">
+            <div class="compare-label">改动后</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <section class="security-card no-issue">
+                <div class="security-head no-chevron">
+                  <div>
+                    <h4>Security Checks</h4>
+                    <p>Site Security · Transaction Analysis</p>
+                  </div>
+                  <span class="badge success">No issues detected</span>
+                </div>
+              </section>
+
+              <section class="preview-card">
+                <h4>Estimated asset changes</h4>
+                <div class="preview-assets">
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin eth">ETH</span>ETH</span
+                    >
+                    <strong>-0.0001</strong>
+                  </div>
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin usdt">USDT</span>USDT</span
+                    >
+                    <strong class="positive">+0.158515</strong>
+                  </div>
+                </div>
+              </section>
+
+              <div class="details">
+                <div class="field">
+                  <span class="label">Network</span>
+                  <div class="value-row">
+                    <span class="coin eth small">ETH</span>
+                    <strong>Ethereum</strong>
+                  </div>
+                </div>
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                  <span class="pill success">Wallet 2 / Account #2</span>
+                </div>
+              </div>
+
+              <div class="footer">
+                <div>
+                  <span class="label">Est. network fee · Normal</span>
+                  <strong>0.00002939 ETH ($0.05)</strong>
+                </div>
+                <div class="actions">
+                  <button class="ghost">Cancel</button>
+                  <button class="primary">Confirm</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="scenario">
+        <div class="scenario-head">
+          <div>
+            <p class="kicker">场景 2</p>
+            <h2>Swap，站点未验证</h2>
+          </div>
+          <p>站点 Unverified 会汇总到卡片右侧，但只有站点未验证时默认收起。</p>
+        </div>
+
+        <div class="compare-grid">
+          <article class="compare-panel">
+            <div class="compare-label">改动前</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <div class="inline-alert info">
+                <span class="status-icon">i</span>
+                <div>
+                  <strong>Unverified</strong>
+                  <p>This site has not been verified by OneKey.</p>
+                </div>
+              </div>
+
+              <div class="simulation-card old-simulation">
+                <div class="card-head">
+                  <h4>Simulation results</h4>
+                  <span class="signguard">SignGuard</span>
+                </div>
+                <div class="asset-row">
+                  <span class="coin eth">ETH</span>
+                  <strong>-0.0001 ETH</strong>
+                </div>
+                <div class="asset-row success">
+                  <span class="coin usdt">USDT</span>
+                  <strong>+0.158515 USDT</strong>
+                </div>
+              </div>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Network</span>
+                  <strong>Ethereum</strong>
+                </div>
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="compare-panel">
+            <div class="compare-label">改动后</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <section class="security-card collapsed">
+                <div class="security-head">
+                  <div>
+                    <h4>Security Checks</h4>
+                    <p>Site Security · Transaction Analysis</p>
+                  </div>
+                  <span class="badge info">1 Unverified</span>
+                  <span class="chevron down"></span>
+                </div>
+              </section>
+
+              <section class="preview-card">
+                <h4>Estimated asset changes</h4>
+                <div class="preview-assets">
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin eth">ETH</span>ETH</span
+                    >
+                    <strong>-0.0001</strong>
+                  </div>
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin usdt">USDT</span>USDT</span
+                    >
+                    <strong class="positive">+0.158515</strong>
+                  </div>
+                </div>
+              </section>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Network</span>
+                  <strong>Ethereum</strong>
+                </div>
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="scenario">
+        <div class="scenario-head">
+          <div>
+            <p class="kicker">场景 3</p>
+            <h2>Swap，交易与地址 warning</h2>
+          </div>
+          <p>
+            风险内容汇总到 Security Checks。warning / critical 地址 badge
+            仍保留在原地址位置。
+          </p>
+        </div>
+
+        <div class="compare-grid">
+          <article class="compare-panel">
+            <div class="compare-label">改动前</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <div class="inline-alert warning">
+                <span class="status-icon">i</span>
+                <div>
+                  <strong>Risk review required</strong>
+                  <p>
+                    Transaction analysis flagged this request for extra review.
+                  </p>
+                </div>
+              </div>
+
+              <div class="simulation-card old-simulation">
+                <div class="card-head">
+                  <h4>Simulation results</h4>
+                  <span class="signguard">SignGuard</span>
+                </div>
+                <div class="asset-row">
+                  <span class="coin usdc">USDC</span>
+                  <strong>-0.01 USDC</strong>
+                </div>
+                <div class="asset-row success">
+                  <span class="coin usdt">USDT</span>
+                  <strong>+0.010008 USDT</strong>
+                </div>
+              </div>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                  <span class="pill warning">Risk address</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="compare-panel">
+            <div class="compare-label">改动后</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <section class="security-card expanded">
+                <div class="security-head">
+                  <div>
+                    <h4>Security Checks</h4>
+                    <p>Site Security · Transaction Analysis · Address</p>
+                  </div>
+                  <span class="badge warning">2 Warning</span>
+                  <span class="chevron up"></span>
+                </div>
+                <div class="security-body">
+                  <div class="check-group">
+                    <h5>Transaction Analysis</h5>
+                    <div class="finding warning">
+                      <span class="status-icon">i</span>
+                      <div>
+                        <strong>Risk review required</strong>
+                        <p>
+                          Transaction analysis flagged this request for extra
+                          review.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="check-group">
+                    <h5>Address</h5>
+                    <div class="finding warning">
+                      <span class="status-icon">i</span>
+                      <div>
+                        <strong>Recipient: 0x13b...76e8</strong>
+                        <p>Risk address</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="preview-card">
+                <h4>Estimated asset changes</h4>
+                <div class="preview-assets">
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin usdc">USDC</span>USDC</span
+                    >
+                    <strong>-0.01</strong>
+                  </div>
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin usdt">USDT</span>USDT</span
+                    >
+                    <strong class="positive">+0.010008</strong>
+                  </div>
+                </div>
+              </section>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                  <span class="pill warning">Risk address</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="scenario">
+        <div class="scenario-head">
+          <div>
+            <p class="kicker">场景 4</p>
+            <h2>Permit2 Approval，签名 warning</h2>
+          </div>
+          <p>
+            Permit 是签名分析项。footer checkbox
+            只在该请求本身需要用户额外确认时出现。
+          </p>
+        </div>
+
+        <div class="compare-grid">
+          <article class="compare-panel">
+            <div class="compare-label">改动前</div>
+            <div class="confirm-modal permit-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Permit2 Approval</h3>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <div class="inline-alert warning">
+                <span class="status-icon">i</span>
+                <div>
+                  <strong>Malicious signatures can lead to asset loss.</strong>
+                  <p>Make sure the dApp is trustworthy before signing.</p>
+                </div>
+              </div>
+              <div class="inline-alert warning">
+                <span class="status-icon">i</span>
+                <div>
+                  <strong>Approve (via Permit)</strong>
+                  <p>Malicious signatures may result in asset loss.</p>
+                </div>
+              </div>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Network</span>
+                  <strong>Ethereum</strong>
+                </div>
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                </div>
+              </div>
+
+              <div class="footer">
+                <label class="risk-checkbox"
+                  ><span></span>Proceed at my own risk</label
+                >
+                <div class="actions">
+                  <button class="ghost">Cancel</button>
+                  <button class="primary disabled">Confirm</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="compare-panel">
+            <div class="compare-label">改动后</div>
+            <div class="confirm-modal permit-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Permit2 Approval</h3>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <section class="security-card expanded">
+                <div class="security-head">
+                  <div>
+                    <h4>Security Checks</h4>
+                    <p>Site Security · Signature Analysis</p>
+                  </div>
+                  <span class="badge warning">3 Warning</span>
+                  <span class="chevron up"></span>
+                </div>
+                <div class="security-body">
+                  <div class="check-group">
+                    <h5>Signature Analysis</h5>
+                    <div class="finding warning">
+                      <span class="status-icon">i</span>
+                      <div>
+                        <strong>Risky signature request</strong>
+                        <p>
+                          Malicious signatures can lead to asset loss. Make sure
+                          the dApp is trustworthy before signing.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="finding warning">
+                      <span class="status-icon">i</span>
+                      <div>
+                        <strong>Risk review required</strong>
+                        <p>
+                          Signature analysis flagged this request for extra
+                          review.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="finding warning">
+                      <span class="status-icon">i</span>
+                      <div>
+                        <strong>Permit signature request</strong>
+                        <p>Malicious signatures may result in asset loss.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="check-group">
+                    <h5>Website</h5>
+                    <div class="finding info">
+                      <span class="status-icon">i</span>
+                      <div>
+                        <strong>Unverified</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Network</span>
+                  <strong>Ethereum</strong>
+                </div>
+                <div class="field">
+                  <span class="label">Account address</span>
+                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
+                </div>
+              </div>
+
+              <div class="footer">
+                <label class="risk-checkbox"
+                  ><span></span>Proceed at my own risk</label
+                >
+                <div class="actions">
+                  <button class="ghost">Cancel</button>
+                  <button class="primary disabled">Confirm</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="scenario">
+        <div class="scenario-head">
+          <div>
+            <p class="kicker">场景 5</p>
+            <h2>Swap，站点与地址 critical 风险</h2>
+          </div>
+          <p>critical 风险默认展开，并且优先级高于 warning。</p>
+        </div>
+
+        <div class="compare-grid">
+          <article class="compare-panel">
+            <div class="compare-label">改动前</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <div class="inline-alert critical">
+                <span class="status-icon">!</span>
+                <div>
+                  <strong>Malicious site warning</strong>
+                  <p>This website has been reported as malicious.</p>
+                </div>
+              </div>
+
+              <div class="simulation-card old-simulation">
+                <div class="card-head">
+                  <h4>Simulation results</h4>
+                  <span class="signguard">SignGuard</span>
+                </div>
+                <div class="asset-row">
+                  <span class="coin usdc">USDC</span>
+                  <strong>-10 USDC</strong>
+                </div>
+                <div class="asset-row success">
+                  <span class="coin usdt">USDT</span>
+                  <strong>+9.97 USDT</strong>
+                </div>
+              </div>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Recipient address</span>
+                  <strong>0x9f4b0304daa2129a21e42df663e8f49c49b9999</strong>
+                  <span class="pill critical">Malicious address</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="compare-panel">
+            <div class="compare-label">改动后</div>
+            <div class="confirm-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Swap</h3>
+                <div class="mev-badge"><span class="shield"></span>MEV</div>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <section class="security-card expanded">
+                <div class="security-head">
+                  <div>
+                    <h4>Security Checks</h4>
+                    <p>Site Security · Transaction Analysis · Address</p>
+                  </div>
+                  <span class="badge critical">2 Risk</span>
+                  <span class="chevron up"></span>
+                </div>
+                <div class="security-body">
+                  <div class="check-group">
+                    <h5>Website</h5>
+                    <div class="finding critical">
+                      <span class="status-icon">!</span>
+                      <div>
+                        <strong>Malicious site warning</strong>
+                        <p>This website has been reported as malicious.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="check-group">
+                    <h5>Address</h5>
+                    <div class="finding critical">
+                      <span class="status-icon">!</span>
+                      <div>
+                        <strong>Recipient: 0x9f4...9999</strong>
+                        <p>Malicious address</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="preview-card">
+                <h4>Estimated asset changes</h4>
+                <div class="preview-assets">
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin usdc">USDC</span>USDC</span
+                    >
+                    <strong>-10</strong>
+                  </div>
+                  <div class="preview-row">
+                    <span class="asset-name"
+                      ><span class="coin usdt">USDT</span>USDT</span
+                    >
+                    <strong class="positive">+9.97</strong>
+                  </div>
+                </div>
+              </section>
+
+              <div class="details compact-details">
+                <div class="field">
+                  <span class="label">Recipient address</span>
+                  <strong>0x9f4b0304daa2129a21e42df663e8f49c49b9999</strong>
+                  <span class="pill critical">Malicious address</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="scenario">
+        <div class="scenario-head">
+          <div>
+            <p class="kicker">场景 6</p>
+            <h2>签名请求，raw data fallback</h2>
+          </div>
+          <p>
+            消息解析失败时显示为 unverified review item，而不是 warning。它属于
+            Signature Analysis，因此默认展开。
+          </p>
+        </div>
+
+        <div class="compare-grid">
+          <article class="compare-panel">
+            <div class="compare-label">改动前</div>
+            <div class="confirm-modal permit-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Signature request</h3>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <div class="inline-alert info">
+                <span class="status-icon">i</span>
+                <div>
+                  <strong>Raw Data</strong>
+                  <p>Unverified message data is shown for manual review.</p>
+                </div>
+              </div>
+
+              <div class="raw-box">
+                0x7b22646f6d61696e223a226170702e756e69737761702e6f7267227d
+              </div>
+            </div>
+          </article>
+
+          <article class="compare-panel">
+            <div class="compare-label">改动后</div>
+            <div class="confirm-modal permit-modal">
+              <div class="modal-head">
+                <button class="close-button" aria-label="Close"></button>
+                <h3>Signature request</h3>
+              </div>
+              <div class="origin-row">
+                <span class="dapp-icon">U</span>
+                <span>app.uniswap.org</span>
+              </div>
+
+              <section class="security-card expanded">
+                <div class="security-head">
+                  <div>
+                    <h4>Security Checks</h4>
+                    <p>Site Security · Signature Analysis</p>
+                  </div>
+                  <span class="badge info">1 Unverified</span>
+                  <span class="chevron up"></span>
+                </div>
+                <div class="security-body">
+                  <div class="check-group">
+                    <h5>Signature Analysis</h5>
+                    <div class="finding info">
+                      <span class="status-icon">i</span>
+                      <div>
+                        <strong>Review raw message data</strong>
+                        <p>
+                          Only basic message details are available. Review the
+                          raw data carefully before signing.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="raw-box">
+                0x7b22646f6d61696e223a226170702e756e69737761702e6f7267227d
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
