@@ -1,925 +1,1020 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>交易确认页安全检查对照 Demo</title>
+    <meta
+      name="description"
+      content="OneKey 安全检查卡最新设计、展示规则与交易确认场景对照 Demo"
+    />
+    <title>安全检查卡最新设计对照 Demo</title>
+    <link rel="icon" href="data:," />
     <link rel="stylesheet" href="./security-check-card-confirmation-demo.css" />
   </head>
   <body>
     <main class="page">
       <header class="page-header">
-        <p class="kicker">QA 对照</p>
-        <h1>交易确认页：改动前后对照</h1>
-        <p>
-          用于对比旧版确认页与新版 Security Checks / Transaction Preview
-          布局的静态场景矩阵。
-        </p>
-        <p class="note">
-          Security Checks 会收拢重复的安全提示内容。地址 badge
-          和底部风险确认仍保留在原位置。只有 warning / critical 地址 tag
-          会汇总进卡片。
-        </p>
+        <div class="page-header-copy">
+          <p class="kicker">QA 对照 · 2026-07-13</p>
+          <h1>安全检查卡：最新设计对照</h1>
+          <p>
+            对比旧版确认页与当前统一安全检查卡，覆盖交易模拟、站点风险、地址风险和签名分析。
+          </p>
+          <p class="note">
+            当前卡片由安全检查、预计资产变化和 SignGuard
+            底部标识组成。资产变化存在时，整张卡片进入一次光芒动画；光芒不表达风险等级。
+            “旧版”按当前 origin/x
+            回退后的实际交互建模，“最新实现”按本地集成分支建模。
+          </p>
+        </div>
+        <div class="demo-actions" aria-label="Demo controls">
+          <span class="glow-rule-chip"
+            ><span class="glow-dot"></span>有资产变化才发光</span
+          >
+          <button id="replay-glow" class="replay-button" type="button">
+            重播可见光芒
+          </button>
+        </div>
       </header>
 
-      <section class="rules">
-        <h2>Security Checks 展示规则</h2>
-        <div class="rule-grid">
+      <section class="rules" aria-labelledby="rules-title">
+        <div class="section-heading">
           <div>
-            <h3>什么时候展示</h3>
-            <p>
-              有安全项时展示。没有安全项时，等站点与本次操作分析都有结果后才展示
-              No issues。
-            </p>
+            <p class="kicker">当前实现</p>
+            <h2 id="rules-title">安全检查卡展示规则</h2>
           </div>
-          <div>
+          <span class="version-pill">以当前分支代码为准</span>
+        </div>
+        <div class="rule-grid">
+          <article>
+            <h3>统一容器</h3>
+            <p>
+              安全检查与预计资产变化位于同一张卡片，SignGuard 固定在卡片底部。
+            </p>
+          </article>
+          <article>
+            <h3>光芒条件</h3>
+            <p>
+              只要交易模拟包含资产变化，就播放一次约 2.8
+              秒的彩色扫光，随后淡出。
+            </p>
+          </article>
+          <article>
             <h3>默认展开</h3>
             <p>
-              有 critical、warning，或非站点类 unverified / unknown
-              项时默认展开，例如 raw message data。
+              存在风险、警告，或非站点类“未经验证”时展开；风险升级时自动重新展开。
             </p>
-          </div>
-          <div>
+          </article>
+          <article>
             <h3>默认收起</h3>
             <p>
-              只有站点 Unverified 时默认收起。用户仍能在卡片右侧看到 Unverified
-              badge。
+              只有站点未经验证，或只有普通 info 提示时收起；用户可以手动展开。
             </p>
-          </div>
-          <div>
-            <h3>保留原位置</h3>
+          </article>
+          <article>
+            <h3>底部标识</h3>
             <p>
-              地址 badge 留在地址行。底部风险确认留在 footer。Transaction
-              Preview 不合并进 Security Checks。
+              无问题或卡片展开时展示“技术支持 SignGuard”；有问题且收起时隐藏。
             </p>
-          </div>
-          <div>
-            <h3>右侧摘要计数</h3>
+          </article>
+          <article>
+            <h3>分割线与地址</h3>
             <p>
-              critical 显示为 Risk，warning 显示为
-              Warning。两者同时存在时分开计数，不把 warning 算进 Risk。
+              地址风险保留在原地址行，不合并进卡片；仅资产区顶部保留内缩分割线。
             </p>
-          </div>
-          <div>
-            <h3>异步状态</h3>
-            <p>
-              站点或本次操作分析未返回时不展示卡片，也不提前显示 No issues。
-              后续异步出现 warning / critical 时自动展开。
-            </p>
-          </div>
+          </article>
         </div>
       </section>
 
-      <details class="mapping-card coverage-card">
+      <details class="coverage-card">
         <summary>QA 覆盖清单</summary>
-        <p>用于测试核对。日常看下面 8 个场景即可。</p>
-        <div class="mapping-table">
-          <div class="mapping-row mapping-head">
-            <span>信息来源</span>
-            <span>状态</span>
-            <span>展示方式</span>
-            <span>对应场景</span>
-          </div>
-          <div class="mapping-row">
-            <span>站点安全：Security</span>
-            <span class="badge success">No issue</span>
-            <span>不生成 finding；无其他问题时显示 No issues</span>
-            <span>场景 1</span>
-          </div>
-          <div class="mapping-row">
-            <span>站点或操作分析未返回</span>
-            <span class="badge info">Pending</span>
-            <span>不展示卡片，不提前显示 No issues</span>
-            <span>规则覆盖 / 场景 1 说明</span>
-          </div>
-          <div class="mapping-row">
-            <span>站点安全：Unverified</span>
-            <span class="badge info">Unverified</span>
-            <span>site-only 默认收起</span>
-            <span>场景 2</span>
-          </div>
-          <div class="mapping-row">
-            <span>站点安全：Medium / High</span>
-            <span class="badge warning">Warning</span>
-            <span>Medium 为 warning，High 为 Risk；默认展开</span>
-            <span>场景 5</span>
-          </div>
-          <div class="mapping-row">
-            <span>交易分析：parser alert / confirmation required</span>
-            <span class="badge warning">Warning</span>
-            <span>进入 Transaction Analysis；默认展开</span>
-            <span>场景 3</span>
-          </div>
-          <div class="mapping-row">
-            <span>交易分析：custom hex data</span>
-            <span class="badge warning">Warning</span>
-            <span>进入 Transaction Analysis；提交前原弹窗保留</span>
-            <span>同场景 3 规则</span>
-          </div>
-          <div class="mapping-row">
-            <span>签名分析：parser alert / confirmation required</span>
-            <span class="badge warning">Warning</span>
-            <span>进入 Signature Analysis；footer checkbox 仍由原逻辑控制</span>
-            <span>场景 4</span>
-          </div>
-          <div class="mapping-row">
-            <span>签名分析：raw data fallback</span>
-            <span class="badge info">Unverified</span>
-            <span>非 site unknown，默认展开</span>
-            <span>场景 6</span>
-          </div>
-          <div class="mapping-row">
-            <span
-              >签名分析：typed data / order / permit / risky raw signing</span
-            >
-            <span class="badge critical">Mixed</span>
-            <span>按签名类型映射；真实单笔只命中一种</span>
-            <span>规则覆盖</span>
-          </div>
-          <div class="mapping-row">
-            <span>地址 tag：warning / critical</span>
-            <span class="badge warning">Warning</span>
-            <span>卡片摘要 + 地址行 badge 保留；多地址按 Risk 优先</span>
-            <span>场景 3 / 5</span>
-          </div>
-          <div class="mapping-row">
-            <span>地址 tag：info / success</span>
-            <span class="badge info">Info</span>
-            <span>只留在地址行，不进入 Security Checks</span>
-            <span>规则覆盖</span>
-          </div>
-          <div class="mapping-row">
-            <span>交易模拟资产变化</span>
-            <span class="badge info">Preview</span>
-            <span>独立 Transaction Preview；主页面展示全部资产变化</span>
-            <span>场景 1</span>
+        <p>
+          状态摘要会同时保留风险、警告和未经验证计数；普通 info 不进入摘要计数。
+        </p>
+        <div class="table-scroll">
+          <div
+            class="mapping-table"
+            role="table"
+            aria-label="QA coverage matrix"
+          >
+            <div class="mapping-row mapping-head" role="row">
+              <span role="columnheader">信息来源</span>
+              <span role="columnheader">状态</span>
+              <span role="columnheader">当前表现</span>
+              <span role="columnheader">场景</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>检查已完成且无 finding</span>
+              <span class="badge success">未发现问题</span>
+              <span>无折叠箭头；直接展示底部标识</span>
+              <span>1</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>只有站点未经验证</span>
+              <span class="badge info">1 未经验证</span>
+              <span>默认收起；底部标识隐藏</span>
+              <span>2</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>交易警告 / 站点风险</span>
+              <span class="badge warning">警告 / 风险</span>
+              <span>进入卡片并默认展开；站点风险继续提供“详情”入口</span>
+              <span>3 / 5</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>接收地址风险</span>
+              <span class="badge warning">风险地址</span>
+              <span>只在原地址行展示；同时阻止卡片误报“未发现问题”</span>
+              <span>3 / 5 / 9</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>Permit / Order</span>
+              <span class="badge warning">警告</span>
+              <span>进入签名分析；请求确认仍由页面 footer 控制</span>
+              <span>4</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>自定义 Hex Data / 合约交互</span>
+              <span class="badge warning">警告</span>
+              <span>进入交易分析；提交前原风险确认弹窗继续保留</span>
+              <span>规则覆盖</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>高风险签名方法</span>
+              <span class="badge critical">风险</span>
+              <span>进入签名分析；页面 footer 必须确认“自行承担风险”</span>
+              <span>规则覆盖</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>dApp 交易使用本地解析 fallback</span>
+              <span class="badge info">未经验证</span>
+              <span>默认展开，不提前给出“未发现问题”</span>
+              <span>11</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>Simulation 存在但资产列表为空</span>
+              <span class="badge preview">无预览</span>
+              <span>隐藏空模拟，不展示资产区，也不触发光芒</span>
+              <span>10</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>消息解析 fallback</span>
+              <span class="badge info">未经验证</span>
+              <span>非站点 unknown，默认展开</span>
+              <span>6</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>普通 Typed Data V3 / V4</span>
+              <span class="badge info">Info</span>
+              <span>默认收起；Permit 与 Order 使用专属警告文案</span>
+              <span>7</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>分析结果未返回，但资产变化已到</span>
+              <span class="badge preview">资产预览</span>
+              <span>先展示同一容器里的资产区，底部标识保持在最下方</span>
+              <span>8</span>
+            </div>
+            <div class="mapping-row" role="row">
+              <span>任意模拟资产变化</span>
+              <span class="badge glow">一次光芒</span>
+              <span>与安全状态无关；减少动态效果时不播放</span>
+              <span>1 / 2 / 3 / 5 / 8 / 9</span>
+            </div>
           </div>
         </div>
       </details>
 
-      <section class="scenario">
-        <div class="scenario-head">
-          <div>
-            <p class="kicker">场景 1</p>
-            <h2>Swap，无安全问题</h2>
-          </div>
-          <p>
-            站点与交易检查都有结果后，展示无风险状态；未返回结果前不展示该卡片。
-          </p>
-        </div>
-
-        <div class="compare-grid">
-          <article class="compare-panel">
-            <div class="compare-label">改动前</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <div class="simulation-card old-simulation">
-                <div class="card-head">
-                  <h4>Simulation results</h4>
-                  <span class="signguard">SignGuard</span>
-                </div>
-                <div class="asset-row">
-                  <span class="coin eth">ETH</span>
-                  <strong>-0.0001 ETH</strong>
-                </div>
-                <div class="asset-row success">
-                  <span class="coin usdt">USDT</span>
-                  <strong>+0.158515 USDT</strong>
-                </div>
-              </div>
-
-              <div class="details">
-                <div class="field">
-                  <span class="label">Network</span>
-                  <div class="value-row">
-                    <span class="coin eth small">ETH</span>
-                    <strong>Ethereum</strong>
-                  </div>
-                </div>
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                  <span class="pill success">Wallet 2 / Account #2</span>
-                </div>
-              </div>
-
-              <div class="footer">
-                <div>
-                  <span class="label">Est. network fee · Normal</span>
-                  <strong>0.00002939 ETH ($0.05)</strong>
-                </div>
-                <div class="actions">
-                  <button class="ghost">Cancel</button>
-                  <button class="primary">Confirm</button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="compare-panel">
-            <div class="compare-label">改动后</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <section class="security-card no-issue">
-                <div class="security-head no-chevron">
-                  <div>
-                    <h4>Security Checks</h4>
-                    <p>Site Security · Transaction Analysis</p>
-                  </div>
-                  <span class="badge success">No issues detected</span>
-                </div>
-              </section>
-
-              <section class="preview-card">
-                <h4>Estimated asset changes</h4>
-                <div class="preview-assets">
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin eth">ETH</span>ETH</span
-                    >
-                    <strong>-0.0001</strong>
-                  </div>
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin usdt">USDT</span>USDT</span
-                    >
-                    <strong class="positive">+0.158515</strong>
-                  </div>
-                </div>
-              </section>
-
-              <div class="details">
-                <div class="field">
-                  <span class="label">Network</span>
-                  <div class="value-row">
-                    <span class="coin eth small">ETH</span>
-                    <strong>Ethereum</strong>
-                  </div>
-                </div>
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                  <span class="pill success">Wallet 2 / Account #2</span>
-                </div>
-              </div>
-
-              <div class="footer">
-                <div>
-                  <span class="label">Est. network fee · Normal</span>
-                  <strong>0.00002939 ETH ($0.05)</strong>
-                </div>
-                <div class="actions">
-                  <button class="ghost">Cancel</button>
-                  <button class="primary">Confirm</button>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="scenario">
-        <div class="scenario-head">
-          <div>
-            <p class="kicker">场景 2</p>
-            <h2>Swap，站点未验证</h2>
-          </div>
-          <p>站点 Unverified 会汇总到卡片右侧，但只有站点未验证时默认收起。</p>
-        </div>
-
-        <div class="compare-grid">
-          <article class="compare-panel">
-            <div class="compare-label">改动前</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <div class="inline-alert info">
-                <span class="status-icon">i</span>
-                <div>
-                  <strong>Unverified</strong>
-                  <p>This site has not been verified by OneKey.</p>
-                </div>
-              </div>
-
-              <div class="simulation-card old-simulation">
-                <div class="card-head">
-                  <h4>Simulation results</h4>
-                  <span class="signguard">SignGuard</span>
-                </div>
-                <div class="asset-row">
-                  <span class="coin eth">ETH</span>
-                  <strong>-0.0001 ETH</strong>
-                </div>
-                <div class="asset-row success">
-                  <span class="coin usdt">USDT</span>
-                  <strong>+0.158515 USDT</strong>
-                </div>
-              </div>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Network</span>
-                  <strong>Ethereum</strong>
-                </div>
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="compare-panel">
-            <div class="compare-label">改动后</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <section class="security-card collapsed">
-                <div class="security-head">
-                  <div>
-                    <h4>Security Checks</h4>
-                    <p>Site Security · Transaction Analysis</p>
-                  </div>
-                  <span class="badge info">1 Unverified</span>
-                  <span class="chevron down"></span>
-                </div>
-              </section>
-
-              <section class="preview-card">
-                <h4>Estimated asset changes</h4>
-                <div class="preview-assets">
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin eth">ETH</span>ETH</span
-                    >
-                    <strong>-0.0001</strong>
-                  </div>
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin usdt">USDT</span>USDT</span
-                    >
-                    <strong class="positive">+0.158515</strong>
-                  </div>
-                </div>
-              </section>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Network</span>
-                  <strong>Ethereum</strong>
-                </div>
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="scenario">
-        <div class="scenario-head">
-          <div>
-            <p class="kicker">场景 3</p>
-            <h2>Swap，交易与地址 warning</h2>
-          </div>
-          <p>
-            风险内容汇总到 Security Checks。warning / critical 地址 badge
-            仍保留在原地址位置。
-          </p>
-        </div>
-
-        <div class="compare-grid">
-          <article class="compare-panel">
-            <div class="compare-label">改动前</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <div class="inline-alert warning">
-                <span class="status-icon">i</span>
-                <div>
-                  <strong>Risk review required</strong>
-                  <p>
-                    Transaction analysis flagged this request for extra review.
-                  </p>
-                </div>
-              </div>
-
-              <div class="simulation-card old-simulation">
-                <div class="card-head">
-                  <h4>Simulation results</h4>
-                  <span class="signguard">SignGuard</span>
-                </div>
-                <div class="asset-row">
-                  <span class="coin usdc">USDC</span>
-                  <strong>-0.01 USDC</strong>
-                </div>
-                <div class="asset-row success">
-                  <span class="coin usdt">USDT</span>
-                  <strong>+0.010008 USDT</strong>
-                </div>
-              </div>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                  <span class="pill warning">Risk address</span>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="compare-panel">
-            <div class="compare-label">改动后</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <section class="security-card expanded">
-                <div class="security-head">
-                  <div>
-                    <h4>Security Checks</h4>
-                    <p>Site Security · Transaction Analysis · Address</p>
-                  </div>
-                  <span class="badge warning">2 Warning</span>
-                  <span class="chevron up"></span>
-                </div>
-                <div class="security-body">
-                  <div class="check-group">
-                    <h5>Transaction Analysis</h5>
-                    <div class="finding warning">
-                      <span class="status-icon">i</span>
-                      <div>
-                        <strong>Risk review required</strong>
-                        <p>
-                          Transaction analysis flagged this request for extra
-                          review.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="check-group">
-                    <h5>Address</h5>
-                    <div class="finding warning">
-                      <span class="status-icon">i</span>
-                      <div>
-                        <strong>Recipient: 0x13b...76e8</strong>
-                        <p>Risk address</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="preview-card">
-                <h4>Estimated asset changes</h4>
-                <div class="preview-assets">
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin usdc">USDC</span>USDC</span
-                    >
-                    <strong>-0.01</strong>
-                  </div>
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin usdt">USDT</span>USDT</span
-                    >
-                    <strong class="positive">+0.010008</strong>
-                  </div>
-                </div>
-              </section>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                  <span class="pill warning">Risk address</span>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="scenario">
-        <div class="scenario-head">
-          <div>
-            <p class="kicker">场景 4</p>
-            <h2>Permit2 Approval，签名 warning</h2>
-          </div>
-          <p>
-            Permit 是签名分析项。footer checkbox
-            只在该请求本身需要用户额外确认时出现。
-          </p>
-        </div>
-
-        <div class="compare-grid">
-          <article class="compare-panel">
-            <div class="compare-label">改动前</div>
-            <div class="confirm-modal permit-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Permit2 Approval</h3>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <div class="inline-alert warning">
-                <span class="status-icon">i</span>
-                <div>
-                  <strong>Malicious signatures can lead to asset loss.</strong>
-                  <p>Make sure the dApp is trustworthy before signing.</p>
-                </div>
-              </div>
-              <div class="inline-alert warning">
-                <span class="status-icon">i</span>
-                <div>
-                  <strong>Approve (via Permit)</strong>
-                  <p>Malicious signatures may result in asset loss.</p>
-                </div>
-              </div>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Network</span>
-                  <strong>Ethereum</strong>
-                </div>
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                </div>
-              </div>
-
-              <div class="footer">
-                <label class="risk-checkbox"
-                  ><span></span>Proceed at my own risk</label
-                >
-                <div class="actions">
-                  <button class="ghost">Cancel</button>
-                  <button class="primary disabled">Confirm</button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="compare-panel">
-            <div class="compare-label">改动后</div>
-            <div class="confirm-modal permit-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Permit2 Approval</h3>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <section class="security-card expanded">
-                <div class="security-head">
-                  <div>
-                    <h4>Security Checks</h4>
-                    <p>Site Security · Signature Analysis</p>
-                  </div>
-                  <span class="badge warning">3 Warning</span>
-                  <span class="chevron up"></span>
-                </div>
-                <div class="security-body">
-                  <div class="check-group">
-                    <h5>Signature Analysis</h5>
-                    <div class="finding warning">
-                      <span class="status-icon">i</span>
-                      <div>
-                        <strong>Risky signature request</strong>
-                        <p>
-                          Malicious signatures can lead to asset loss. Make sure
-                          the dApp is trustworthy before signing.
-                        </p>
-                      </div>
-                    </div>
-                    <div class="finding warning">
-                      <span class="status-icon">i</span>
-                      <div>
-                        <strong>Risk review required</strong>
-                        <p>
-                          Signature analysis flagged this request for extra
-                          review.
-                        </p>
-                      </div>
-                    </div>
-                    <div class="finding warning">
-                      <span class="status-icon">i</span>
-                      <div>
-                        <strong>Permit signature request</strong>
-                        <p>Malicious signatures may result in asset loss.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="check-group">
-                    <h5>Website</h5>
-                    <div class="finding info">
-                      <span class="status-icon">i</span>
-                      <div>
-                        <strong>Unverified</strong>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Network</span>
-                  <strong>Ethereum</strong>
-                </div>
-                <div class="field">
-                  <span class="label">Account address</span>
-                  <strong>0x13b30304daa2129a21e42df663e8f49c49b276e8</strong>
-                </div>
-              </div>
-
-              <div class="footer">
-                <label class="risk-checkbox"
-                  ><span></span>Proceed at my own risk</label
-                >
-                <div class="actions">
-                  <button class="ghost">Cancel</button>
-                  <button class="primary disabled">Confirm</button>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="scenario">
-        <div class="scenario-head">
-          <div>
-            <p class="kicker">场景 5</p>
-            <h2>Swap，站点与地址 critical 风险</h2>
-          </div>
-          <p>critical 风险默认展开，并且优先级高于 warning。</p>
-        </div>
-
-        <div class="compare-grid">
-          <article class="compare-panel">
-            <div class="compare-label">改动前</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <div class="inline-alert critical">
-                <span class="status-icon">!</span>
-                <div>
-                  <strong>Malicious site warning</strong>
-                  <p>This website has been reported as malicious.</p>
-                </div>
-              </div>
-
-              <div class="simulation-card old-simulation">
-                <div class="card-head">
-                  <h4>Simulation results</h4>
-                  <span class="signguard">SignGuard</span>
-                </div>
-                <div class="asset-row">
-                  <span class="coin usdc">USDC</span>
-                  <strong>-10 USDC</strong>
-                </div>
-                <div class="asset-row success">
-                  <span class="coin usdt">USDT</span>
-                  <strong>+9.97 USDT</strong>
-                </div>
-              </div>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Recipient address</span>
-                  <strong>0x9f4b0304daa2129a21e42df663e8f49c49b9999</strong>
-                  <span class="pill critical">Malicious address</span>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="compare-panel">
-            <div class="compare-label">改动后</div>
-            <div class="confirm-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Swap</h3>
-                <div class="mev-badge"><span class="shield"></span>MEV</div>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <section class="security-card expanded">
-                <div class="security-head">
-                  <div>
-                    <h4>Security Checks</h4>
-                    <p>Site Security · Transaction Analysis · Address</p>
-                  </div>
-                  <span class="badge critical">2 Risk</span>
-                  <span class="chevron up"></span>
-                </div>
-                <div class="security-body">
-                  <div class="check-group">
-                    <h5>Website</h5>
-                    <div class="finding critical">
-                      <span class="status-icon">!</span>
-                      <div>
-                        <strong>Malicious site warning</strong>
-                        <p>This website has been reported as malicious.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="check-group">
-                    <h5>Address</h5>
-                    <div class="finding critical">
-                      <span class="status-icon">!</span>
-                      <div>
-                        <strong>Recipient: 0x9f4...9999</strong>
-                        <p>Malicious address</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section class="preview-card">
-                <h4>Estimated asset changes</h4>
-                <div class="preview-assets">
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin usdc">USDC</span>USDC</span
-                    >
-                    <strong>-10</strong>
-                  </div>
-                  <div class="preview-row">
-                    <span class="asset-name"
-                      ><span class="coin usdt">USDT</span>USDT</span
-                    >
-                    <strong class="positive">+9.97</strong>
-                  </div>
-                </div>
-              </section>
-
-              <div class="details compact-details">
-                <div class="field">
-                  <span class="label">Recipient address</span>
-                  <strong>0x9f4b0304daa2129a21e42df663e8f49c49b9999</strong>
-                  <span class="pill critical">Malicious address</span>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="scenario">
-        <div class="scenario-head">
-          <div>
-            <p class="kicker">场景 6</p>
-            <h2>签名请求，raw data fallback</h2>
-          </div>
-          <p>
-            消息解析失败时显示为 unverified review item，而不是 warning。它属于
-            Signature Analysis，因此默认展开。
-          </p>
-        </div>
-
-        <div class="compare-grid">
-          <article class="compare-panel">
-            <div class="compare-label">改动前</div>
-            <div class="confirm-modal permit-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Signature request</h3>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <div class="inline-alert info">
-                <span class="status-icon">i</span>
-                <div>
-                  <strong>Raw Data</strong>
-                  <p>Unverified message data is shown for manual review.</p>
-                </div>
-              </div>
-
-              <div class="raw-box">
-                0x7b22646f6d61696e223a226170702e756e69737761702e6f7267227d
-              </div>
-            </div>
-          </article>
-
-          <article class="compare-panel">
-            <div class="compare-label">改动后</div>
-            <div class="confirm-modal permit-modal">
-              <div class="modal-head">
-                <button class="close-button" aria-label="Close"></button>
-                <h3>Signature request</h3>
-              </div>
-              <div class="origin-row">
-                <span class="dapp-icon">U</span>
-                <span>app.uniswap.org</span>
-              </div>
-
-              <section class="security-card expanded">
-                <div class="security-head">
-                  <div>
-                    <h4>Security Checks</h4>
-                    <p>Site Security · Signature Analysis</p>
-                  </div>
-                  <span class="badge info">1 Unverified</span>
-                  <span class="chevron up"></span>
-                </div>
-                <div class="security-body">
-                  <div class="check-group">
-                    <h5>Signature Analysis</h5>
-                    <div class="finding info">
-                      <span class="status-icon">i</span>
-                      <div>
-                        <strong>Review raw message data</strong>
-                        <p>
-                          Only basic message details are available. Review the
-                          raw data carefully before signing.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <div class="raw-box">
-                0x7b22646f6d61696e223a226170702e756e69737761702e6f7267227d
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
+      <div id="scenarios" class="scenario-list"></div>
     </main>
+
+    <dialog id="site-risk-dialog" class="risk-detail-dialog">
+      <form method="dialog">
+        <div class="risk-detail-head">
+          <h2 data-risk-detail-title>站点风险详情</h2>
+          <button type="submit" aria-label="关闭">×</button>
+        </div>
+        <p data-risk-detail-description></p>
+        <button class="dialog-confirm" type="submit">知道了</button>
+      </form>
+    </dialog>
+
+    <script>
+      const scenarios = [
+        {
+          id: "safe-swap",
+          number: 1,
+          title: "Swap，无安全问题",
+          description:
+            "检查完成后显示“未发现问题”。资产变化、底部标识和一次光芒都属于同一张卡片。",
+          sheetTitle: "Swap",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          assets: [
+            { symbol: "ETH", amount: "-0.0001", tone: "out" },
+            { symbol: "USDT", amount: "+0.158515", tone: "in" },
+          ],
+          details: [
+            { label: "网络", value: "Ethereum" },
+            {
+              label: "账户地址",
+              value: "0x13b30304daa2129a21e42df663e8f49c49b276e8",
+              badge: { text: "Wallet 2 / Account #2", status: "success" },
+            },
+          ],
+          legacy: { alerts: [] },
+          current: {
+            coverage: "站点安全 · 交易分析",
+            checksResolved: true,
+            findings: [],
+          },
+        },
+        {
+          id: "site-unverified",
+          number: 2,
+          title: "站点未经验证，默认收起",
+          description:
+            "卡片虽然收起，资产预览仍留在同一容器中并触发光芒；底部标识只有展开后才出现。",
+          sheetTitle: "Swap",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          assets: [
+            { symbol: "USDC", amount: "-0.01", tone: "out" },
+            { symbol: "USDT", amount: "+0.010005", tone: "in" },
+          ],
+          details: [
+            { label: "网络", value: "Ethereum" },
+            { label: "账户地址", value: "0x13b3...76e8" },
+          ],
+          legacy: {
+            alerts: [],
+          },
+          current: {
+            coverage: "站点安全 · 交易分析",
+            findings: [
+              { category: "site", status: "unknown", title: "未经验证" },
+            ],
+          },
+        },
+        {
+          id: "warning-swap",
+          number: 3,
+          title: "交易与地址警告",
+          description:
+            "交易警告进入卡片并默认展开；地址风险保留在接收地址行，不在卡片内重复。",
+          sheetTitle: "Swap",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          assets: [
+            { symbol: "USDC", amount: "-0.01", tone: "out" },
+            { symbol: "USDT", amount: "+0.010008", tone: "in" },
+          ],
+          details: [
+            {
+              label: "接收地址",
+              value: "0x13b30304daa2129a21e42df663e8f49c49b276e8",
+              badge: { text: "风险地址", status: "warning", risk: true },
+            },
+          ],
+          legacy: {
+            alerts: [],
+          },
+          current: {
+            coverage: "站点安全 · 交易分析",
+            findings: [
+              {
+                category: "operation",
+                status: "warning",
+                title: "需要风险确认",
+                description: "交易分析提示该请求需要额外确认。",
+              },
+            ],
+          },
+          riskConfirmation: true,
+        },
+        {
+          id: "permit-signature",
+          number: 4,
+          title: "Permit2 Approval，签名警告",
+          description:
+            "Permit 使用专属警告文案。没有模拟资产变化，因此卡片不发光；页面底部的风险确认仍保留。",
+          sheetTitle: "Permit2 Approval",
+          origin: "app.uniswap.org",
+          kind: "message",
+          assets: [],
+          details: [
+            { label: "网络", value: "Ethereum" },
+            { label: "账户地址", value: "0x13b3...76e8" },
+          ],
+          riskConfirmation: true,
+          legacy: {
+            alerts: [
+              {
+                status: "warning",
+                title:
+                  "恶意签名可能导致资产损失。请确保当前 dApp 可信，否则可能导致资产损失。",
+              },
+            ],
+          },
+          current: {
+            coverage: "站点安全 · 签名分析",
+            findings: [
+              {
+                category: "operation",
+                status: "warning",
+                title: "需要风险确认",
+                description: "签名分析提示该请求需要额外确认。",
+              },
+              {
+                category: "operation",
+                status: "warning",
+                title: "Permit 签名请求",
+                description:
+                  "恶意签名可能导致资产损失。请确保当前 dApp 可信，否则可能导致资产损失。",
+              },
+              {
+                category: "site",
+                status: "unknown",
+                title: "未经验证",
+              },
+            ],
+          },
+        },
+        {
+          id: "critical-swap",
+          number: 5,
+          title: "站点与地址高风险",
+          description:
+            "站点风险在卡片内默认展开，地址风险留在对应地址行；资产变化仍触发同一种光芒。",
+          sheetTitle: "Swap",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          assets: [
+            { symbol: "USDC", amount: "-10", tone: "out" },
+            { symbol: "USDT", amount: "+9.97", tone: "in" },
+          ],
+          details: [
+            {
+              label: "接收地址",
+              value: "0x9f4b0304daa2129a21e42df663e8f49c49b9999",
+              badge: { text: "恶意地址", status: "critical", risk: true },
+            },
+          ],
+          legacy: {
+            alerts: [],
+          },
+          current: {
+            coverage: "站点安全 · 交易分析",
+            findings: [
+              {
+                category: "site",
+                status: "critical",
+                title: "恶意网站警告",
+                action: {
+                  label: "详情",
+                  description:
+                    "该网站已被报告为恶意网站，请核对风险来源后再继续。",
+                },
+              },
+            ],
+          },
+          riskConfirmation: true,
+        },
+        {
+          id: "raw-message",
+          number: 6,
+          title: "签名消息解析 fallback",
+          description:
+            "消息无法完整解析时记为“未经验证”。它不是站点类 unknown，因此默认展开。",
+          sheetTitle: "签名请求",
+          origin: "app.uniswap.org",
+          kind: "message",
+          assets: [],
+          rawData: "0x7b22646f6d61696e223a226170702e756e69737761702e6f7267227d",
+          details: [],
+          legacy: {
+            alerts: [],
+          },
+          current: {
+            coverage: "站点安全 · 签名分析",
+            findings: [
+              {
+                category: "operation",
+                status: "unknown",
+                title: "核对原始消息",
+                description:
+                  "当前无法完整解析此签名消息。签名前请仔细核对原始数据。",
+              },
+            ],
+          },
+        },
+        {
+          id: "typed-data",
+          number: 7,
+          title: "普通 Typed Data 签名请求",
+          description:
+            "普通 EIP-712 Typed Data 是 info，默认收起且不发光。点击最新卡片可查看完整文案。",
+          sheetTitle: "签名请求",
+          origin: "app.uniswap.org",
+          kind: "message",
+          assets: [],
+          details: [
+            { label: "网络", value: "Ethereum" },
+            { label: "账户地址", value: "0x13b3...76e8" },
+          ],
+          legacy: {
+            alerts: [],
+          },
+          current: {
+            coverage: "站点安全 · 签名分析",
+            findings: [
+              {
+                category: "operation",
+                status: "info",
+                title: "Typed data 签名请求",
+                description: "签名前请仔细核对 typed data 内容。",
+              },
+            ],
+          },
+        },
+        {
+          id: "assets-before-checks",
+          number: 8,
+          title: "安全分析未返回，资产变化已到",
+          description:
+            "安全检查区不会提前显示“未发现问题”；资产区可以先渲染，底部标识始终位于资产之后。",
+          sheetTitle: "Swap",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          assets: [
+            { symbol: "USDC", amount: "-0.01", tone: "out" },
+            { symbol: "USDT", amount: "+0.010005", tone: "in" },
+          ],
+          details: [
+            { label: "网络", value: "Ethereum" },
+            { label: "账户地址", value: "0x13b3...76e8" },
+          ],
+          legacy: { alerts: [] },
+          current: {
+            coverage: "",
+            findings: [],
+          },
+        },
+        {
+          id: "address-risk-only",
+          number: 9,
+          title: "只有接收地址风险",
+          description:
+            "风险 badge 留在地址行。即使其他检查已完成，卡片也不会显示与它冲突的“未发现问题”。",
+          sheetTitle: "Swap",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          assets: [
+            { symbol: "USDC", amount: "-0.01", tone: "out" },
+            { symbol: "USDT", amount: "+0.010005", tone: "in" },
+          ],
+          details: [
+            {
+              label: "接收地址",
+              value: "0x13b30304daa2129a21e42df663e8f49c49b276e8",
+              badge: { text: "风险地址", status: "warning", risk: true },
+            },
+          ],
+          legacy: { alerts: [] },
+          current: {
+            coverage: "站点安全 · 交易分析",
+            checksResolved: true,
+            findings: [],
+          },
+        },
+        {
+          id: "empty-simulation",
+          number: 10,
+          title: "模拟结果存在，但没有资产变化",
+          description:
+            "旧版会留下空的模拟卡；最新实现不展示空资产区，也不会触发光芒。",
+          sheetTitle: "合约交互",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          hasSimulation: true,
+          assets: [],
+          details: [
+            { label: "网络", value: "Ethereum" },
+            { label: "合约", value: "0x1f98...f984" },
+          ],
+          legacy: { alerts: [] },
+          current: {
+            coverage: "站点安全 · 交易分析",
+            checksResolved: true,
+            findings: [],
+          },
+        },
+        {
+          id: "local-parsed-transaction",
+          number: 11,
+          title: "dApp 交易回退到本地解析",
+          description:
+            "本地解析不代表服务端安全分析已完成，因此显示“未经验证”并默认展开，不能给出无问题结论。",
+          sheetTitle: "交易请求",
+          origin: "app.uniswap.org",
+          kind: "transaction",
+          assets: [],
+          details: [
+            { label: "网络", value: "Ethereum" },
+            { label: "接收地址", value: "0x13b3...76e8" },
+          ],
+          legacy: { alerts: [] },
+          current: {
+            coverage: "站点安全 · 交易分析",
+            findings: [
+              {
+                category: "operation",
+                status: "unknown",
+                title: "未经验证",
+              },
+            ],
+          },
+        },
+      ];
+
+      const statusWeight = { critical: 5, warning: 4, unknown: 3, info: 1 };
+      const categoryOrder = ["site", "operation"];
+
+      function signGuard() {
+        return `
+          <span class="signguard" aria-label="SignGuard">
+            <span class="signguard-mark" aria-hidden="true"><i></i><b></b></span>
+            <strong>SignGuard</strong>
+          </span>
+        `;
+      }
+
+      function renderAssetRows(assets, legacy = false) {
+        return assets
+          .map(
+            (asset) => `
+              <div class="${legacy ? "legacy-asset-row" : "preview-row"}">
+                <span class="asset-name">
+                  <span class="coin ${asset.symbol.toLowerCase()}">${asset.symbol.slice(0, 1)}</span>
+                  <strong>${asset.symbol}</strong>
+                </span>
+                <strong class="amount ${asset.tone}">${asset.amount}</strong>
+              </div>
+            `,
+          )
+          .join("");
+      }
+
+      function renderLegacySimulation(assets, hasSimulation) {
+        if (!assets.length && !hasSimulation) return "";
+        return `
+          <section class="legacy-simulation">
+            <div class="legacy-simulation-head">
+              <span>Simulation results</span>
+              ${signGuard()}
+            </div>
+            <div class="legacy-assets">${renderAssetRows(assets, true)}</div>
+          </section>
+        `;
+      }
+
+      function renderAlert(alert) {
+        return `
+          <div class="inline-alert ${alert.status}">
+            <span class="status-icon" aria-hidden="true">${alert.status === "critical" ? "!" : "i"}</span>
+            <div>
+              <strong>${alert.title}</strong>
+              ${alert.description ? `<p>${alert.description}</p>` : ""}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderDetails(details) {
+        if (!details.length) return "";
+        return `
+          <div class="details">
+            ${details
+              .map(
+                (detail) => `
+                  <div class="field">
+                    <span class="field-label">${detail.label}</span>
+                    <strong>${detail.value}</strong>
+                    ${
+                      detail.badge
+                        ? `<span class="pill ${detail.badge.status}">${detail.badge.text}</span>`
+                        : ""
+                    }
+                  </div>
+                `,
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderRawData(rawData) {
+        return rawData ? `<div class="raw-box">${rawData}</div>` : "";
+      }
+
+      function renderActions(requiresRiskConfirmation) {
+        return `
+          <div class="sheet-actions">
+            <button class="secondary-action" type="button">取消</button>
+            <button
+              class="primary-action${requiresRiskConfirmation ? " destructive disabled" : ""}"
+              type="button"
+              data-confirm-action
+              ${requiresRiskConfirmation ? "disabled" : ""}
+            }>确认</button>
+          </div>
+        `;
+      }
+
+      function renderRiskConfirmation(enabled) {
+        if (!enabled) return "";
+        return `
+          <label class="risk-checkbox">
+            <span aria-hidden="true"></span>
+            <input type="checkbox" data-risk-confirmation />
+            <strong>自行承担风险</strong>
+          </label>
+        `;
+      }
+
+      function getSiteStatus(scenario, variant) {
+        const siteFinding = scenario.current.findings.find(
+          (finding) => finding.category === "site",
+        );
+        if (siteFinding?.status === "critical") {
+          return variant === "legacy" ? "critical" : "neutral";
+        }
+        if (siteFinding?.status === "warning") {
+          return variant === "legacy" ? "warning" : "neutral";
+        }
+        if (siteFinding) {
+          return "neutral";
+        }
+        return scenario.current.coverage.includes("站点安全")
+          ? "security"
+          : "neutral";
+      }
+
+      function renderOrigin(scenario, variant) {
+        const status = getSiteStatus(scenario, variant);
+        const statusIcon =
+          status === "security"
+            ? '<span class="origin-status-icon" aria-label="已验证">✓</span>'
+            : status === "critical" || status === "warning"
+              ? `<span class="origin-status-icon" aria-label="站点风险">!</span>`
+              : "";
+        return `
+          <div class="origin-row ${status}">
+            <span class="dapp-icon">U</span>
+            <span>${scenario.origin}</span>
+            ${statusIcon}
+          </div>
+        `;
+      }
+
+      function renderSheetShell(scenario, content, variant) {
+        return `
+          <div class="wallet-sheet">
+            <div class="modal-head">
+              <button class="close-button" type="button" aria-label="关闭"></button>
+              <h3>${scenario.sheetTitle}</h3>
+              ${scenario.kind === "transaction" ? '<span class="mev-badge"><i></i>MEV</span>' : ""}
+            </div>
+            ${renderOrigin(scenario, variant)}
+            ${content}
+            ${renderRawData(scenario.rawData)}
+            ${renderDetails(scenario.details)}
+            <div class="sheet-bottom">
+              ${renderRiskConfirmation(scenario.riskConfirmation)}
+              ${renderActions(Boolean(scenario.riskConfirmation))}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderLegacy(scenario) {
+        const alerts = scenario.legacy.alerts.map(renderAlert).join("");
+        const content = `${alerts}${renderLegacySimulation(scenario.assets, scenario.hasSimulation)}`;
+        return renderSheetShell(scenario, content, "legacy");
+      }
+
+      function getSummary(findings) {
+        const counts = {
+          critical: findings.filter((item) => item.status === "critical")
+            .length,
+          warning: findings.filter((item) => item.status === "warning").length,
+          unknown: findings.filter((item) => item.status === "unknown").length,
+        };
+        const text = [
+          counts.critical ? `${counts.critical} 风险` : "",
+          counts.warning ? `${counts.warning} 警告` : "",
+          counts.unknown ? `${counts.unknown} 未经验证` : "",
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        const highest = findings.reduce(
+          (status, item) =>
+            !status || statusWeight[item.status] > statusWeight[status]
+              ? item.status
+              : status,
+          "",
+        );
+        const badgeStatus =
+          highest === "critical"
+            ? "critical"
+            : highest === "warning"
+              ? "warning"
+              : "info";
+        return { text, badgeStatus };
+      }
+
+      function shouldExpand(findings) {
+        return findings.some(
+          (item) =>
+            item.status === "critical" ||
+            item.status === "warning" ||
+            (item.status === "unknown" && item.category !== "site"),
+        );
+      }
+
+      function renderFinding(finding) {
+        return `
+          <div class="finding ${finding.status}">
+            <span class="status-icon" aria-hidden="true">${finding.status === "critical" ? "!" : "i"}</span>
+            <div>
+              <strong>${finding.title}</strong>
+              ${finding.description ? `<p>${finding.description}</p>` : ""}
+              ${
+                finding.action
+                  ? `<button
+                      class="finding-action"
+                      type="button"
+                      data-site-risk-action
+                      data-risk-title="${finding.title}"
+                      data-risk-description="${finding.action.description}"
+                    >${finding.action.label}</button>`
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+      }
+
+      function renderFindingGroups(findings, kind) {
+        const labels = {
+          site: "网站",
+          operation: kind === "message" ? "签名分析" : "交易分析",
+        };
+        const categories = categoryOrder
+          .filter((category) =>
+            findings.some((item) => item.category === category),
+          )
+          .sort((a, b) => {
+            const aWeight = Math.max(
+              ...findings
+                .filter((item) => item.category === a)
+                .map((item) => statusWeight[item.status]),
+            );
+            const bWeight = Math.max(
+              ...findings
+                .filter((item) => item.category === b)
+                .map((item) => statusWeight[item.status]),
+            );
+            return (
+              bWeight - aWeight ||
+              categoryOrder.indexOf(a) - categoryOrder.indexOf(b)
+            );
+          });
+        return categories
+          .map(
+            (category) => `
+              <section class="check-group">
+                <h5>${labels[category]}</h5>
+                <div class="finding-list">
+                  ${findings
+                    .filter((item) => item.category === category)
+                    .sort(
+                      (a, b) => statusWeight[b.status] - statusWeight[a.status],
+                    )
+                    .map(renderFinding)
+                    .join("")}
+                </div>
+              </section>
+            `,
+          )
+          .join("");
+      }
+
+      function renderPoweredBy() {
+        return `
+          <div class="powered-by">
+            <span>技术支持</span>
+            ${signGuard()}
+          </div>
+        `;
+      }
+
+      function renderAssetPreview(assets, standalone) {
+        if (!assets.length) return "";
+        return `
+          <section class="asset-preview${standalone ? " standalone" : ""}">
+            <h4>预计资产变化</h4>
+            <div class="preview-assets">${renderAssetRows(assets)}</div>
+          </section>
+        `;
+      }
+
+      function renderCurrentCard(scenario) {
+        const { current, assets } = scenario;
+        const findings = current.findings;
+        const expanded = shouldExpand(findings);
+        const collapsedClass =
+          findings.length && !expanded ? " is-collapsed" : "";
+        const summary = getSummary(findings);
+        const bodyId = `${scenario.id}-security-body`;
+        const hasAddressRisk = scenario.details.some(
+          (detail) => detail.badge?.risk,
+        );
+        const shouldShowNoIssue =
+          current.checksResolved &&
+          !findings.length &&
+          !hasAddressRisk &&
+          current.coverage;
+        let securitySection = "";
+
+        if (shouldShowNoIssue) {
+          securitySection = `
+            <div class="security-summary-row no-issue-row">
+              <div class="security-title-copy">
+                <h4>安全检查</h4>
+                <p>${current.coverage}</p>
+              </div>
+              <span class="badge success">未发现问题</span>
+            </div>
+          `;
+        } else if (findings.length) {
+          securitySection = `
+            <button
+              class="security-trigger"
+              type="button"
+              data-security-toggle
+              aria-expanded="${expanded}"
+              aria-controls="${bodyId}"
+            >
+              <span class="security-title-copy">
+                <strong>安全检查</strong>
+                <small>${current.coverage}</small>
+              </span>
+              <span class="security-trigger-meta">
+                ${summary.text ? `<span class="badge ${summary.badgeStatus}" title="${summary.text}">${summary.text}</span>` : ""}
+                <span class="chevron" aria-hidden="true"></span>
+              </span>
+            </button>
+            <div class="security-body" id="${bodyId}">
+              ${renderFindingGroups(findings, scenario.kind)}
+            </div>
+          `;
+        }
+
+        const standaloneAssets = !securitySection;
+        return `
+          <div
+            class="laser-frame${collapsedClass}"
+            data-glow="${assets.length ? "true" : "false"}"
+          >
+            <section class="security-card${collapsedClass}">
+              ${securitySection}
+              ${renderAssetPreview(assets, standaloneAssets)}
+              ${renderPoweredBy()}
+            </section>
+          </div>
+        `;
+      }
+
+      function renderCurrent(scenario) {
+        return renderSheetShell(
+          scenario,
+          renderCurrentCard(scenario),
+          "current",
+        );
+      }
+
+      function renderScenario(scenario) {
+        const glows = scenario.assets.length > 0;
+        return `
+          <section class="scenario" id="scenario-${scenario.number}">
+            <div class="scenario-head">
+              <div>
+                <p class="kicker">场景 ${scenario.number}</p>
+                <h2>${scenario.title}</h2>
+              </div>
+              <p>${scenario.description}</p>
+            </div>
+            <div class="compare-grid">
+              <article class="compare-panel">
+                <div class="compare-label"><span>旧版</span><small>分散展示</small></div>
+                ${renderLegacy(scenario)}
+              </article>
+              <article class="compare-panel latest-panel">
+                <div class="compare-label">
+                  <span>最新实现</span>
+                  <small class="behavior-chip ${glows ? "glow" : "plain"}">
+                    ${glows ? "有资产 · 发光一次" : "无资产 · 不发光"}
+                  </small>
+                </div>
+                ${renderCurrent(scenario)}
+              </article>
+            </div>
+          </section>
+        `;
+      }
+
+      document.querySelector("#scenarios").innerHTML = scenarios
+        .map(renderScenario)
+        .join("");
+
+      document.querySelectorAll("[data-security-toggle]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const card = button.closest(".security-card");
+          const frame = button.closest(".laser-frame");
+          const isCollapsed = card.classList.toggle("is-collapsed");
+          frame.classList.toggle("is-collapsed", isCollapsed);
+          button.setAttribute("aria-expanded", String(!isCollapsed));
+        });
+      });
+
+      document
+        .querySelectorAll("[data-risk-confirmation]")
+        .forEach((checkbox) => {
+          const sheet = checkbox.closest(".wallet-sheet");
+          const confirmButton = sheet.querySelector("[data-confirm-action]");
+          checkbox.addEventListener("change", () => {
+            confirmButton.disabled = !checkbox.checked;
+            confirmButton.classList.toggle("disabled", !checkbox.checked);
+          });
+        });
+
+      const riskDetailDialog = document.querySelector("#site-risk-dialog");
+      const riskDetailTitle = riskDetailDialog.querySelector(
+        "[data-risk-detail-title]",
+      );
+      const riskDetailDescription = riskDetailDialog.querySelector(
+        "[data-risk-detail-description]",
+      );
+      document.querySelectorAll("[data-site-risk-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          riskDetailTitle.textContent = button.dataset.riskTitle;
+          riskDetailDescription.textContent = button.dataset.riskDescription;
+          riskDetailDialog.showModal();
+        });
+      });
+
+      const glowCards = [...document.querySelectorAll('[data-glow="true"]')];
+
+      function playGlow(card) {
+        card.classList.remove("is-glowing");
+        void card.offsetWidth;
+        card.classList.add("is-glowing");
+        card.dataset.glowPlayed = "true";
+      }
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (
+              entry.isIntersecting &&
+              entry.target.dataset.glowPlayed !== "true"
+            ) {
+              playGlow(entry.target);
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.35 },
+      );
+
+      glowCards.forEach((card) => observer.observe(card));
+
+      document.querySelector("#replay-glow").addEventListener("click", () => {
+        glowCards.forEach((card) => {
+          card.classList.remove("is-glowing");
+          card.dataset.glowPlayed = "false";
+          observer.unobserve(card);
+        });
+        requestAnimationFrame(() => {
+          glowCards.forEach((card) => {
+            const rect = card.getBoundingClientRect();
+            const visible = rect.bottom > 0 && rect.top < window.innerHeight;
+            if (visible) playGlow(card);
+            else observer.observe(card);
+          });
+        });
+      });
+    </script>
   </body>
 </html>
