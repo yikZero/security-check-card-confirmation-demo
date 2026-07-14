@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="OneKey Prime Blockaid 交易模拟与 Security Checks 单卡设计交互 Demo"
+    />
+    <title>Prime 高级交易模拟 Demo</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <a class="back-link" href="../">← 返回当前安全检查卡 Demo</a>
+          <p class="eyebrow">Prime · Blockaid integration concept</p>
+          <h1>同一笔交易，Prime 看见更多资产信息</h1>
+          <p class="hero-copy">
+            免费版保留当前资产数量变化；Prime 在相同交易上增加 USD
+            估值、模拟后余额和资产流向，不额外创造授权模拟场景。
+          </p>
+        </div>
+        <div class="rule-chips" aria-label="核心规则">
+          <span><i class="rule-dot glow-dot"></i>有资产变化才发光</span>
+          <span
+            ><i class="rule-dot risk-dot"></i>免费与 Prime 使用相同交易</span
+          >
+          <span><i class="rule-dot card-dot"></i>只有一张卡</span>
+        </div>
+      </header>
+
+      <section
+        class="demo-layout"
+        aria-label="Prime transaction simulation demo"
+      >
+        <aside class="control-panel">
+          <div class="control-heading">
+            <p class="eyebrow">交互控制</p>
+            <h2>对照不同状态</h2>
+          </div>
+
+          <fieldset class="control-group">
+            <legend>用户类型</legend>
+            <div class="segmented-control" id="tier-control">
+              <button type="button" data-tier="free" aria-pressed="false">
+                免费用户
+              </button>
+              <button
+                type="button"
+                data-tier="prime"
+                aria-pressed="true"
+                class="is-active"
+              >
+                <span class="mini-prime-mark">P</span> Prime 用户
+              </button>
+            </div>
+          </fieldset>
+
+          <fieldset class="control-group">
+            <legend>交易状态</legend>
+            <div class="scenario-control" id="scenario-control">
+              <button
+                type="button"
+                data-scenario="swap"
+                aria-pressed="true"
+                class="is-active"
+              >
+                <span>正常 Swap</span>
+                <small>同一笔 Swap 对照</small>
+              </button>
+              <button
+                type="button"
+                data-scenario="liquidity"
+                aria-pressed="false"
+              >
+                <span>多资产变化</span>
+                <small>USDC + WETH → Position NFT</small>
+              </button>
+              <button type="button" data-scenario="nft" aria-pressed="false">
+                <span>NFT 购买</span>
+                <small>ETH → ERC-721</small>
+              </button>
+            </div>
+          </fieldset>
+
+          <button class="replay-button" id="replay-glow" type="button">
+            重播当前光芒
+          </button>
+
+          <div class="design-note">
+            <strong>这里刻意没有做什么</strong>
+            <p>
+              不新增无限授权或 ApprovalForAll
+              模拟，不把安全验证与资产模拟混为一谈，也不把 Blockaid
+              原始字段直接倾倒给用户。
+            </p>
+          </div>
+        </aside>
+
+        <section class="preview-panel">
+          <div class="preview-toolbar">
+            <div>
+              <span class="live-dot"></span>
+              <span id="preview-label">Prime · Swap</span>
+            </div>
+            <span class="viewport-label">Responsive preview</span>
+          </div>
+
+          <div class="device-stage">
+            <article class="confirmation-sheet" aria-live="polite">
+              <header class="sheet-header">
+                <button
+                  type="button"
+                  class="icon-button"
+                  aria-label="Close confirmation"
+                >
+                  ×
+                </button>
+                <div>
+                  <h2 id="sheet-title">Swap</h2>
+                  <p id="sheet-origin">app.uniswap.org</p>
+                </div>
+                <button
+                  type="button"
+                  class="icon-button more-button"
+                  aria-label="More options"
+                >
+                  ···
+                </button>
+              </header>
+
+              <section
+                class="transaction-context"
+                aria-label="Transaction context"
+              >
+                <div class="context-row">
+                  <span>Network</span>
+                  <strong
+                    ><i class="network-dot"></i
+                    ><span id="network-value">Ethereum</span></strong
+                  >
+                </div>
+                <div class="context-row">
+                  <span>Account</span>
+                  <strong>Wallet 2 / Account #2</strong>
+                </div>
+                <div class="context-row" id="target-row">
+                  <span id="target-label">Contract</span>
+                  <strong>
+                    <span id="target-value">Uniswap Router</span>
+                  </strong>
+                </div>
+              </section>
+
+              <div id="security-card-mount"></div>
+
+              <footer class="sheet-actions">
+                <button type="button" class="secondary-action">Cancel</button>
+                <button
+                  type="button"
+                  class="primary-action"
+                  id="confirm-button"
+                >
+                  Confirm
+                </button>
+              </footer>
+            </article>
+          </div>
+        </section>
+      </section>
+
+      <section class="decision-rules" aria-labelledby="decision-title">
+        <div>
+          <p class="eyebrow">设计边界</p>
+          <h2 id="decision-title">卡片是决策摘要，不是完整报告</h2>
+        </div>
+        <div class="decision-grid">
+          <article>
+            <span>免费版</span>
+            <h3>保留当前资产数量变化</h3>
+            <p>展示转出、收到的 Token 或 NFT 数量，不削弱现有免费体验。</p>
+          </article>
+          <article>
+            <span>Prime 卡内</span>
+            <h3>补充 USD 与总体价值影响</h3>
+            <p>
+              缺价资产的 USD 位置显示“—”，并隐藏总体净变化；绝不使用部分价格推算。
+            </p>
+          </article>
+          <article>
+            <span>Prime 详情</span>
+            <h3>验证余额与资产流向</h3>
+            <p>详情只展示主卡没有的信息，不再重复资产变化摘要。</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <dialog
+      class="analysis-dialog simulation-detail-dialog"
+      id="analysis-dialog"
+      aria-labelledby="analysis-dialog-title"
+    >
+      <div class="dialog-shell">
+        <span class="dialog-handle" aria-hidden="true"></span>
+        <header class="dialog-header">
+          <div>
+            <div class="dialog-title-line">
+              <h2 id="analysis-dialog-title">Simulation details</h2>
+              <span class="prime-badge"><i>P</i> Prime</span>
+            </div>
+            <p id="dialog-subtitle">Ethereum · Uniswap</p>
+          </div>
+          <button
+            type="button"
+            class="dialog-close"
+            data-close-dialog
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </header>
+        <div class="simulation-scope">
+          <i aria-hidden="true">i</i>
+          <span
+            >Simulation estimate · Network fee not included · Separate from
+            Security Checks</span
+          >
+        </div>
+        <div class="dialog-content" id="analysis-content"></div>
+      </div>
+    </dialog>
+
+    <dialog
+      class="analysis-dialog prime-intro-dialog"
+      id="prime-intro-dialog"
+      aria-labelledby="prime-intro-title"
+    >
+      <div class="dialog-shell">
+        <span class="dialog-handle" aria-hidden="true"></span>
+        <header class="dialog-header">
+          <div>
+            <div class="dialog-title-line">
+              <h2 id="prime-intro-title">Advanced transaction simulation</h2>
+              <span class="prime-cta-badge">Prime</span>
+            </div>
+            <p>
+              Preview before you confirm. See USD estimates and balance changes.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="dialog-close"
+            data-close-dialog
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </header>
+        <div class="dialog-content">
+          <div class="benefit-list">
+            <article>
+              <i>01</i>
+              <div>
+                <strong>USD estimates</strong
+                ><span
+                  >See the estimated USD value of each asset change when
+                  available</span
+                >
+              </div>
+            </article>
+            <article>
+              <i>02</i>
+              <div>
+                <strong>Estimated net asset value change</strong
+                ><span
+                  >See the overall estimated change when all asset prices are
+                  available</span
+                >
+              </div>
+            </article>
+            <article>
+              <i>03</i>
+              <div>
+                <strong>Simulated balance changes</strong
+                ><span
+                  >Compare simulated balances before and after the
+                  transaction</span
+                >
+              </div>
+            </article>
+            <article>
+              <i>04</i>
+              <div>
+                <strong>Asset flow</strong
+                ><span
+                  >See where assets are sent and received when available</span
+                >
+              </div>
+            </article>
+          </div>
+          <p class="free-promise">
+            Prime adds simulation detail. Security Checks and basic asset
+            changes remain available to everyone.
+          </p>
+          <button class="learn-prime-button" type="button">Get Prime</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
