@@ -313,6 +313,10 @@ button {
   margin: 12px auto 0;
 }
 
+.header-stress-phone.narrow {
+  width: min(280px, 100%);
+}
+
 .table-scroll {
   overflow-x: auto;
 }
@@ -866,17 +870,21 @@ button {
   border-radius: var(--radius-card);
 }
 
-.security-summary-row,
-.security-trigger {
-  display: flex;
-  align-items: stretch;
+.security-summary-row {
+  display: grid;
   width: 100%;
-  flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding: 10px 12px;
 }
 
 .security-trigger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  gap: 8px;
+  padding: 10px 12px;
   justify-content: flex-start;
   text-align: left;
   background: transparent;
@@ -889,20 +897,18 @@ button {
   background: var(--surface-subdued);
 }
 
-.security-title-row,
-.security-meta-row {
+.security-success-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   width: 100%;
   min-width: 0;
   gap: 8px;
 }
 
-.security-title-row h4,
-.security-title-row > strong,
-.security-meta-row p,
-.security-meta-row small {
-  flex: 1;
+.security-trigger-title,
+.security-success-header h4 {
   min-width: 0;
   margin: 0;
   overflow: hidden;
@@ -914,8 +920,8 @@ button {
   margin: 0;
 }
 
-.security-title-row h4,
-.security-title-row > strong,
+.security-trigger-title,
+.security-success-header h4,
 .asset-preview h4 {
   color: var(--text);
   font-size: 14px;
@@ -923,12 +929,42 @@ button {
   line-height: 1.3;
 }
 
-.security-meta-row p,
-.security-meta-row small {
+.security-success-header h4 {
+  flex: 1 1 96px;
+}
+
+.security-success-header.is-stacked h4 {
+  flex-basis: 100%;
+  min-width: 100%;
+}
+
+.security-success-scope {
+  margin: 0;
   color: var(--text-subdued);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.35;
+}
+
+.security-trigger.is-stacked {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+}
+
+.security-trigger.is-stacked .security-trigger-title {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.security-trigger.is-stacked .security-compact-summary {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: start;
+}
+
+.security-trigger.is-stacked .chevron {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .security-compact-summary {

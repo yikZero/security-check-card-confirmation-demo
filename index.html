@@ -197,15 +197,14 @@
       <section class="header-stress" aria-labelledby="header-stress-title">
         <div class="section-heading">
           <div>
-            <p class="kicker">375pt 压力验证</p>
+            <p class="kicker">320 / 375pt 压力验证</p>
             <h2 id="header-stress-title">长语言与多档状态</h2>
           </div>
-          <span class="version-pill">卡片宽 335px · 内容宽 311px</span>
+          <span class="version-pill">常态单行 · 空间不足自适应两行</span>
         </div>
         <p class="header-stress-intro">
-          每个样例都模拟 375pt 页面扣除 20pt 两侧边距后的真实卡片宽度。标题不与
-          Badge
-          争宽；检查范围空间不足时单行省略，完整状态仍保留在展开详情与无障碍名称中。
+          风险态不再常驻展示检查范围，只保留标题、最高等级与其余 finding
+          数量。正常宽度使用单行；长语言或大字体空间不足时，摘要自适应落到第二行。
         </p>
         <div class="header-stress-grid">
           <article class="header-stress-case">
@@ -214,42 +213,36 @@
             </div>
             <div class="header-stress-phone">
               <div class="security-card">
-                <div class="security-summary-row">
-                  <div class="security-title-row">
-                    <h4>Security Checks</h4>
-                    <span class="chevron" aria-hidden="true"></span>
-                  </div>
-                  <div class="security-meta-row">
-                    <p>Site Security · Transaction Analysis</p>
-                    <span class="security-compact-summary">
-                      <span class="badge critical">1 Risk</span>
-                      <span class="security-summary-more">+2</span>
-                    </span>
-                  </div>
-                </div>
+                <button class="security-trigger" type="button">
+                  <strong class="security-trigger-title"
+                    >Security Checks</strong
+                  >
+                  <span class="security-compact-summary">
+                    <span class="badge critical">Risk</span>
+                    <span class="security-summary-more">+2</span>
+                  </span>
+                  <span class="chevron" aria-hidden="true"></span>
+                </button>
               </div>
             </div>
           </article>
 
           <article class="header-stress-case" lang="th">
             <div class="header-stress-label">
-              <strong>ภาษาไทย</strong><span>3 tiers</span>
+              <strong>ภาษาไทย</strong><span>320pt fallback</span>
             </div>
-            <div class="header-stress-phone">
+            <div class="header-stress-phone narrow">
               <div class="security-card">
-                <div class="security-summary-row">
-                  <div class="security-title-row">
-                    <h4>การตรวจสอบความปลอดภัย</h4>
-                    <span class="chevron" aria-hidden="true"></span>
-                  </div>
-                  <div class="security-meta-row">
-                    <p>ความปลอดภัยของเว็บไซต์ · การวิเคราะห์ธุรกรรม</p>
-                    <span class="security-compact-summary">
-                      <span class="badge critical">1 ความเสี่ยง</span>
-                      <span class="security-summary-more">+2</span>
-                    </span>
-                  </div>
-                </div>
+                <button class="security-trigger" type="button">
+                  <strong class="security-trigger-title"
+                    >การตรวจสอบความปลอดภัย</strong
+                  >
+                  <span class="security-compact-summary">
+                    <span class="badge critical">ความเสี่ยง</span>
+                    <span class="security-summary-more">+2</span>
+                  </span>
+                  <span class="chevron" aria-hidden="true"></span>
+                </button>
               </div>
             </div>
           </article>
@@ -260,19 +253,16 @@
             </div>
             <div class="header-stress-phone">
               <div class="security-card">
-                <div class="security-summary-row">
-                  <div class="security-title-row">
-                    <h4>Sicherheitsprüfungen</h4>
-                    <span class="chevron" aria-hidden="true"></span>
-                  </div>
-                  <div class="security-meta-row">
-                    <p>Seitensicherheit · Transaktionsanalyse</p>
-                    <span class="security-compact-summary">
-                      <span class="badge warning">1 Warnung</span>
-                      <span class="security-summary-more">+1</span>
-                    </span>
-                  </div>
-                </div>
+                <button class="security-trigger" type="button">
+                  <strong class="security-trigger-title"
+                    >Sicherheitsprüfungen</strong
+                  >
+                  <span class="security-compact-summary">
+                    <span class="badge warning">Warnung</span>
+                    <span class="security-summary-more">+1</span>
+                  </span>
+                  <span class="chevron" aria-hidden="true"></span>
+                </button>
               </div>
             </div>
           </article>
@@ -284,17 +274,18 @@
             <div class="header-stress-phone">
               <div class="security-card">
                 <div class="security-summary-row no-issue-row">
-                  <div class="security-title-row">
+                  <div class="security-success-header">
                     <h4>Comprobaciones de seguridad</h4>
-                  </div>
-                  <div class="security-meta-row">
-                    <p>Seguridad del sitio · Análisis de transacción</p>
                     <span class="security-compact-summary">
                       <span class="badge success"
                         >No se detectaron problemas</span
                       >
                     </span>
                   </div>
+                  <p class="security-success-scope">
+                    Se completaron las comprobaciones del sitio y de la
+                    transacción.
+                  </p>
                 </div>
               </div>
             </div>
@@ -846,16 +837,23 @@
         ].filter((item) => item.count > 0);
       }
 
-      function renderCompactSummary(summaryItems) {
+      function renderCompactSummary(summaryItems, findings) {
         if (!summaryItems.length) return "";
         const [primaryItem, ...remainingItems] = summaryItems;
         const remainingFindingCount = remainingItems.reduce(
           (total, item) => total + item.count,
           0,
         );
+        const isSiteOnlyUnverified =
+          findings.length === 1 &&
+          findings[0].category === "site" &&
+          findings[0].status === "unknown";
+        const primaryLabel = isSiteOnlyUnverified
+          ? "站点未经验证"
+          : `${primaryItem.label}${primaryItem.count > 1 ? ` ×${primaryItem.count}` : ""}`;
         return `
           <span class="security-compact-summary">
-            <span class="badge ${primaryItem.badgeStatus}">${primaryItem.count} ${primaryItem.label}</span>
+            <span class="badge ${primaryItem.badgeStatus}">${primaryLabel}</span>
             ${remainingFindingCount ? `<span class="security-summary-more">+${remainingFindingCount}</span>` : ""}
           </span>
         `;
@@ -963,6 +961,12 @@
         `;
       }
 
+      function getCompletedChecksText(kind) {
+        return kind === "message"
+          ? "站点与签名检查已完成"
+          : "站点与交易检查已完成";
+      }
+
       function renderCurrentCard(scenario) {
         const { current, assets } = scenario;
         const findings = current.findings;
@@ -984,15 +988,13 @@
         if (shouldShowNoIssue) {
           securitySection = `
             <div class="security-summary-row no-issue-row">
-              <div class="security-title-row">
+              <div class="security-success-header">
                 <h4>安全检查</h4>
-              </div>
-              <div class="security-meta-row">
-                <p>${current.coverage}</p>
                 <span class="security-compact-summary">
                   <span class="badge success">未发现问题</span>
                 </span>
               </div>
+              <p class="security-success-scope">${getCompletedChecksText(scenario.kind)}</p>
             </div>
           `;
         } else if (findings.length) {
@@ -1006,14 +1008,9 @@
               aria-controls="${bodyId}"
               aria-label="安全检查，${current.coverage}${fullSummaryLabel ? `，${fullSummaryLabel}` : ""}"
             >
-              <span class="security-title-row">
-                <strong>安全检查</strong>
-                <span class="chevron" aria-hidden="true"></span>
-              </span>
-              <span class="security-meta-row">
-                ${current.coverage ? `<small>${current.coverage}</small>` : ""}
-                ${renderCompactSummary(summaryItems)}
-              </span>
+              <strong class="security-trigger-title">安全检查</strong>
+              ${renderCompactSummary(summaryItems, findings)}
+              <span class="chevron" aria-hidden="true"></span>
             </button>
             <div class="security-body" id="${bodyId}">
               ${renderFindingGroups(findings, scenario.kind)}
@@ -1077,6 +1074,32 @@
       document.querySelector("#scenarios").innerHTML = scenarios
         .map(renderScenario)
         .join("");
+
+      function updateAdaptiveSecurityHeaders() {
+        document.querySelectorAll(".security-trigger").forEach((trigger) => {
+          const title = trigger.querySelector(".security-trigger-title");
+          trigger.classList.remove("is-stacked");
+          trigger.classList.toggle(
+            "is-stacked",
+            title.scrollWidth > title.clientWidth,
+          );
+        });
+        document
+          .querySelectorAll(".security-success-header")
+          .forEach((header) => {
+            const title = header.querySelector("h4");
+            header.classList.remove("is-stacked");
+            header.classList.toggle(
+              "is-stacked",
+              title.scrollWidth > title.clientWidth,
+            );
+          });
+      }
+
+      requestAnimationFrame(updateAdaptiveSecurityHeaders);
+      window.addEventListener("resize", () => {
+        requestAnimationFrame(updateAdaptiveSecurityHeaders);
+      });
 
       document.querySelectorAll("[data-security-toggle]").forEach((button) => {
         button.addEventListener("click", () => {
