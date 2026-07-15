@@ -872,7 +872,7 @@ button {
   align-items: stretch;
   width: 100%;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
   padding: 10px 12px;
 }
 
@@ -889,30 +889,33 @@ button {
   background: var(--surface-subdued);
 }
 
-.security-header-main {
+.security-title-row,
+.security-meta-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
   min-width: 0;
   gap: 8px;
 }
 
-.security-title-copy {
-  display: flex;
+.security-title-row h4,
+.security-title-row > strong,
+.security-meta-row p,
+.security-meta-row small {
   flex: 1;
   min-width: 0;
-  flex-direction: column;
-  align-items: flex-start;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.security-title-copy h4,
-.security-title-copy p,
 .asset-preview h4 {
   margin: 0;
 }
 
-.security-title-copy h4,
-.security-title-copy > strong,
+.security-title-row h4,
+.security-title-row > strong,
 .asset-preview h4 {
   color: var(--text);
   font-size: 14px;
@@ -920,28 +923,29 @@ button {
   line-height: 1.3;
 }
 
-.security-title-copy p,
-.security-title-copy small {
-  max-width: 100%;
-  margin-top: 2px;
-  overflow: visible;
+.security-meta-row p,
+.security-meta-row small {
   color: var(--text-subdued);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.35;
-  overflow-wrap: anywhere;
-  text-overflow: clip;
-  white-space: normal;
 }
 
-.security-badge-row {
+.security-compact-summary {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  width: 100%;
-  min-width: 0;
-  flex-wrap: wrap;
-  gap: 6px;
+  width: fit-content;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.security-summary-more {
+  flex: 0 0 auto;
+  color: var(--text-subdued);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
 .badge,
@@ -1000,7 +1004,7 @@ button {
   flex: 0 0 auto;
   width: 10px;
   height: 10px;
-  margin: 3px 4px 0 2px;
+  margin: 0 4px 0 2px;
   border-right: 2px solid var(--text-muted);
   border-bottom: 2px solid var(--text-muted);
   transform: rotate(225deg);
