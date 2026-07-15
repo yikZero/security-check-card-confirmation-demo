@@ -186,7 +186,8 @@ button {
 }
 
 .rules,
-.coverage-card {
+.coverage-card,
+.header-stress {
   background: var(--surface);
   border: 1px solid var(--neutral-3);
   border-radius: 16px;
@@ -263,6 +264,53 @@ button {
   margin: 8px 0 0;
   color: var(--text-subdued);
   font-size: 12px;
+}
+
+.header-stress {
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.header-stress-intro {
+  max-width: 760px;
+  margin: 10px 0 0;
+  color: var(--text-subdued);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.header-stress-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.header-stress-case {
+  min-width: 0;
+  padding: 14px;
+  background: var(--surface-subdued);
+  border: 1px solid var(--neutral-3);
+  border-radius: 12px;
+}
+
+.header-stress-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-subdued);
+  font-size: 11px;
+}
+
+.header-stress-label strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.header-stress-phone {
+  width: min(335px, 100%);
+  margin: 12px auto 0;
 }
 
 .table-scroll {
@@ -821,14 +869,15 @@ button {
 .security-summary-row,
 .security-trigger {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   width: 100%;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 10px 12px;
 }
 
 .security-trigger {
-  justify-content: space-between;
+  justify-content: flex-start;
   text-align: left;
   background: transparent;
   border: 0;
@@ -838,6 +887,14 @@ button {
 
 .security-trigger:hover {
   background: var(--surface-subdued);
+}
+
+.security-header-main {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
 }
 
 .security-title-copy {
@@ -867,21 +924,24 @@ button {
 .security-title-copy small {
   max-width: 100%;
   margin-top: 2px;
-  overflow: hidden;
+  overflow: visible;
   color: var(--text-subdued);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
 }
 
-.security-trigger-meta {
+.security-badge-row {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .badge,
@@ -937,9 +997,10 @@ button {
 }
 
 .chevron {
+  flex: 0 0 auto;
   width: 10px;
   height: 10px;
-  margin: -3px 3px 0 2px;
+  margin: 3px 4px 0 2px;
   border-right: 2px solid var(--text-muted);
   border-bottom: 2px solid var(--text-muted);
   transform: rotate(225deg);
@@ -947,7 +1008,6 @@ button {
 }
 
 .security-card.is-collapsed .chevron {
-  margin-top: 3px;
   transform: rotate(45deg);
 }
 
@@ -1275,6 +1335,10 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .header-stress-grid {
+    grid-template-columns: 1fr;
+  }
+
   .scenario-list {
     margin-top: 36px;
   }
@@ -1324,17 +1388,18 @@ button {
     gap: 5px;
   }
 
-  .security-trigger,
-  .security-summary-row {
-    align-items: flex-start;
+  .header-stress {
+    padding: 14px 5px;
   }
 
-  .security-trigger-meta {
-    max-width: 48%;
+  .header-stress-case {
+    padding: 14px 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
   }
 
-  .security-trigger-meta .badge {
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .header-stress-case + .header-stress-case {
+    border-top: 1px solid var(--neutral-3);
   }
 }

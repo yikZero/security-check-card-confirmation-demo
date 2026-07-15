@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="OneKey 安全检查卡最新设计、展示规则与交易确认场景对照 Demo"
+      content="OneKey 安全检查卡响应式 Header 最佳方案与交易确认场景对照 Demo"
     />
-    <title>安全检查卡最新设计对照 Demo</title>
+    <title>安全检查卡最佳方案预览 Demo</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="./security-check-card-confirmation-demo.css" />
   </head>
@@ -15,8 +15,8 @@
     <main class="page">
       <header class="page-header">
         <div class="page-header-copy">
-          <p class="kicker">QA 对照 · 2026-07-13</p>
-          <h1>安全检查卡：最新设计对照</h1>
+          <p class="kicker">方案预览 · 2026-07-15</p>
+          <h1>安全检查卡：最佳 Header 方案</h1>
           <p>
             对比旧版确认页与当前统一安全检查卡，覆盖交易模拟、站点风险、地址风险和签名分析。
           </p>
@@ -24,7 +24,8 @@
             当前卡片由安全检查、预计资产变化和 SignGuard
             底部标识组成。资产变化存在时，整张卡片进入一次光芒动画；光芒不表达风险等级。
             “旧版”按当前 origin/x
-            回退后的实际交互建模，“最新实现”按本地集成分支建模。
+            回退后的实际交互建模，“方案预览”先展示拟采用的响应式 Header；App
+            代码尚未修改。
           </p>
         </div>
         <div class="demo-actions" aria-label="Demo controls">
@@ -40,10 +41,10 @@
       <section class="rules" aria-labelledby="rules-title">
         <div class="section-heading">
           <div>
-            <p class="kicker">当前实现</p>
+            <p class="kicker">Demo 提案</p>
             <h2 id="rules-title">安全检查卡展示规则</h2>
           </div>
-          <span class="version-pill">以当前分支代码为准</span>
+          <span class="version-pill">待确认 · Demo only</span>
         </div>
         <div class="rule-grid">
           <article>
@@ -83,13 +84,21 @@
               地址风险保留在原地址行，不合并进卡片；仅资产区顶部保留内缩分割线。
             </p>
           </article>
+          <article>
+            <h3>Header 自适应</h3>
+            <p>
+              标题与箭头固定在第一层；各风险档位使用独立
+              Badge，在第二层按容器宽度自动换行。
+            </p>
+          </article>
         </div>
       </section>
 
       <details class="coverage-card">
         <summary>QA 覆盖清单</summary>
         <p>
-          状态摘要会同时保留风险、警告和未经验证计数；普通 info 不进入摘要计数。
+          状态摘要按风险、警告、未经验证拆成独立 Badge；普通 info
+          不进入摘要计数。
         </p>
         <div class="table-scroll">
           <div
@@ -184,6 +193,115 @@
           </div>
         </div>
       </details>
+
+      <section class="header-stress" aria-labelledby="header-stress-title">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">375pt 压力验证</p>
+            <h2 id="header-stress-title">长语言与多档状态</h2>
+          </div>
+          <span class="version-pill">卡片宽 335px · 内容宽 311px</span>
+        </div>
+        <p class="header-stress-intro">
+          每个样例都模拟 375pt 页面扣除 20pt 两侧边距后的真实卡片宽度。Badge
+          保留完整文字与数量，空间不足时整颗换行，不截断安全信息。
+        </p>
+        <div class="header-stress-grid">
+          <article class="header-stress-case">
+            <div class="header-stress-label">
+              <strong>English</strong><span>3 tiers</span>
+            </div>
+            <div class="header-stress-phone">
+              <div class="security-card">
+                <div class="security-summary-row">
+                  <div class="security-header-main">
+                    <div class="security-title-copy">
+                      <h4>Security Checks</h4>
+                      <p>Site Security · Transaction Analysis</p>
+                    </div>
+                    <span class="chevron" aria-hidden="true"></span>
+                  </div>
+                  <div class="security-badge-row">
+                    <span class="badge critical">1 Risk</span>
+                    <span class="badge warning">1 Warning</span>
+                    <span class="badge info">1 Unverified</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="header-stress-case" lang="th">
+            <div class="header-stress-label">
+              <strong>ภาษาไทย</strong><span>3 tiers</span>
+            </div>
+            <div class="header-stress-phone">
+              <div class="security-card">
+                <div class="security-summary-row">
+                  <div class="security-header-main">
+                    <div class="security-title-copy">
+                      <h4>การตรวจสอบความปลอดภัย</h4>
+                      <p>ความปลอดภัยของเว็บไซต์ · การวิเคราะห์ธุรกรรม</p>
+                    </div>
+                    <span class="chevron" aria-hidden="true"></span>
+                  </div>
+                  <div class="security-badge-row">
+                    <span class="badge critical">1 ความเสี่ยง</span>
+                    <span class="badge warning">1 คำเตือน</span>
+                    <span class="badge info">1 ไม่ได้รับการยืนยัน</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="header-stress-case" lang="de">
+            <div class="header-stress-label">
+              <strong>Deutsch</strong><span>2 tiers</span>
+            </div>
+            <div class="header-stress-phone">
+              <div class="security-card">
+                <div class="security-summary-row">
+                  <div class="security-header-main">
+                    <div class="security-title-copy">
+                      <h4>Sicherheitsprüfungen</h4>
+                      <p>Seitensicherheit · Transaktionsanalyse</p>
+                    </div>
+                    <span class="chevron" aria-hidden="true"></span>
+                  </div>
+                  <div class="security-badge-row">
+                    <span class="badge warning">1 Warnung</span>
+                    <span class="badge info">1 Nicht verifiziert</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="header-stress-case" lang="es">
+            <div class="header-stress-label">
+              <strong>Español</strong><span>no issues</span>
+            </div>
+            <div class="header-stress-phone">
+              <div class="security-card">
+                <div class="security-summary-row no-issue-row">
+                  <div class="security-header-main">
+                    <div class="security-title-copy">
+                      <h4>Comprobaciones de seguridad</h4>
+                      <p>Seguridad del sitio · Análisis de transacción</p>
+                    </div>
+                  </div>
+                  <div class="security-badge-row">
+                    <span class="badge success"
+                      >No se detectaron problemas</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
 
       <div id="scenarios" class="scenario-list"></div>
     </main>
@@ -703,34 +821,44 @@
         return renderSheetShell(scenario, content, "legacy");
       }
 
-      function getSummary(findings) {
+      function getSummaryItems(findings) {
         const counts = {
           critical: findings.filter((item) => item.status === "critical")
             .length,
           warning: findings.filter((item) => item.status === "warning").length,
           unknown: findings.filter((item) => item.status === "unknown").length,
         };
-        const text = [
-          counts.critical ? `${counts.critical} 风险` : "",
-          counts.warning ? `${counts.warning} 警告` : "",
-          counts.unknown ? `${counts.unknown} 未经验证` : "",
-        ]
-          .filter(Boolean)
-          .join(" · ");
-        const highest = findings.reduce(
-          (status, item) =>
-            !status || statusWeight[item.status] > statusWeight[status]
-              ? item.status
-              : status,
-          "",
-        );
-        const badgeStatus =
-          highest === "critical"
-            ? "critical"
-            : highest === "warning"
-              ? "warning"
-              : "info";
-        return { text, badgeStatus };
+        return [
+          {
+            count: counts.critical,
+            badgeStatus: "critical",
+            label: "风险",
+          },
+          {
+            count: counts.warning,
+            badgeStatus: "warning",
+            label: "警告",
+          },
+          {
+            count: counts.unknown,
+            badgeStatus: "info",
+            label: "未经验证",
+          },
+        ].filter((item) => item.count > 0);
+      }
+
+      function renderSummaryBadges(summaryItems) {
+        if (!summaryItems.length) return "";
+        return `
+          <span class="security-badge-row">
+            ${summaryItems
+              .map(
+                (item) =>
+                  `<span class="badge ${item.badgeStatus}">${item.count} ${item.label}</span>`,
+              )
+              .join("")}
+          </span>
+        `;
       }
 
       function shouldExpand(findings) {
@@ -835,7 +963,7 @@
         const expanded = shouldExpand(findings);
         const collapsedClass =
           findings.length && !expanded ? " is-collapsed" : "";
-        const summary = getSummary(findings);
+        const summaryItems = getSummaryItems(findings);
         const bodyId = `${scenario.id}-security-body`;
         const hasAddressRisk = scenario.details.some(
           (detail) => detail.badge?.risk,
@@ -850,11 +978,15 @@
         if (shouldShowNoIssue) {
           securitySection = `
             <div class="security-summary-row no-issue-row">
-              <div class="security-title-copy">
-                <h4>安全检查</h4>
-                <p>${current.coverage}</p>
+              <div class="security-header-main">
+                <div class="security-title-copy">
+                  <h4>安全检查</h4>
+                  <p>${current.coverage}</p>
+                </div>
               </div>
-              <span class="badge success">未发现问题</span>
+              <div class="security-badge-row">
+                <span class="badge success">未发现问题</span>
+              </div>
             </div>
           `;
         } else if (findings.length) {
@@ -866,14 +998,14 @@
               aria-expanded="${expanded}"
               aria-controls="${bodyId}"
             >
-              <span class="security-title-copy">
-                <strong>安全检查</strong>
-                <small>${current.coverage}</small>
-              </span>
-              <span class="security-trigger-meta">
-                ${summary.text ? `<span class="badge ${summary.badgeStatus}" title="${summary.text}">${summary.text}</span>` : ""}
+              <span class="security-header-main">
+                <span class="security-title-copy">
+                  <strong>安全检查</strong>
+                  <small>${current.coverage}</small>
+                </span>
                 <span class="chevron" aria-hidden="true"></span>
               </span>
+              ${renderSummaryBadges(summaryItems)}
             </button>
             <div class="security-body" id="${bodyId}">
               ${renderFindingGroups(findings, scenario.kind)}
@@ -922,7 +1054,7 @@
               </article>
               <article class="compare-panel latest-panel">
                 <div class="compare-label">
-                  <span>最新实现</span>
+                  <span>方案预览</span>
                   <small class="behavior-chip ${glows ? "glow" : "plain"}">
                     ${glows ? "有资产 · 发光一次" : "无资产 · 不发光"}
                   </small>
