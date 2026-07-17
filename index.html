@@ -200,11 +200,11 @@
             <p class="kicker">320 / 375pt 压力验证</p>
             <h2 id="header-stress-title">长语言与多档状态</h2>
           </div>
-          <span class="version-pill">常态单行 · 空间不足自适应两行</span>
+          <span class="version-pill">最高等级 + 来源域 · 不计数</span>
         </div>
         <p class="header-stress-intro">
-          风险态不再常驻展示检查范围，只保留标题、最高等级与其余 finding
-          数量。正常宽度使用单行；长语言或大字体空间不足时，摘要自适应落到第二行。
+          第一行只保留标题与最高等级；第二行说明该等级来自哪个检查域。成功态才展示完整检查范围，
+          长语言允许标题和来源自然换行，不截断 Badge 与 Chevron。
         </p>
         <div class="header-stress-grid">
           <article class="header-stress-case">
@@ -214,14 +214,18 @@
             <div class="header-stress-phone">
               <div class="security-card">
                 <button class="security-trigger" type="button">
-                  <strong class="security-trigger-title"
-                    >Security Checks</strong
-                  >
-                  <span class="security-compact-summary">
-                    <span class="badge critical">Risk</span>
-                    <span class="security-summary-more">+2</span>
+                  <span class="security-header-primary">
+                    <strong class="security-trigger-title"
+                      >Security Checks</strong
+                    >
+                    <span class="security-compact-summary">
+                      <span class="badge critical">Risk</span>
+                    </span>
+                    <span class="chevron" aria-hidden="true"></span>
                   </span>
-                  <span class="chevron" aria-hidden="true"></span>
+                  <span class="security-status-source"
+                    >Transaction Analysis</span
+                  >
                 </button>
               </div>
             </div>
@@ -234,14 +238,18 @@
             <div class="header-stress-phone narrow">
               <div class="security-card">
                 <button class="security-trigger" type="button">
-                  <strong class="security-trigger-title"
-                    >การตรวจสอบความปลอดภัย</strong
-                  >
-                  <span class="security-compact-summary">
-                    <span class="badge critical">ความเสี่ยง</span>
-                    <span class="security-summary-more">+2</span>
+                  <span class="security-header-primary">
+                    <strong class="security-trigger-title"
+                      >การตรวจสอบความปลอดภัย</strong
+                    >
+                    <span class="security-compact-summary">
+                      <span class="badge critical">ความเสี่ยง</span>
+                    </span>
+                    <span class="chevron" aria-hidden="true"></span>
                   </span>
-                  <span class="chevron" aria-hidden="true"></span>
+                  <span class="security-status-source"
+                    >ความปลอดภัยของเว็บไซต์</span
+                  >
                 </button>
               </div>
             </div>
@@ -254,14 +262,18 @@
             <div class="header-stress-phone">
               <div class="security-card">
                 <button class="security-trigger" type="button">
-                  <strong class="security-trigger-title"
-                    >Sicherheitsprüfungen</strong
-                  >
-                  <span class="security-compact-summary">
-                    <span class="badge warning">Warnung</span>
-                    <span class="security-summary-more">+1</span>
+                  <span class="security-header-primary">
+                    <strong class="security-trigger-title"
+                      >Sicherheitsprüfungen</strong
+                    >
+                    <span class="security-compact-summary">
+                      <span class="badge warning">Warnung</span>
+                    </span>
+                    <span class="chevron" aria-hidden="true"></span>
                   </span>
-                  <span class="chevron" aria-hidden="true"></span>
+                  <span class="security-status-source"
+                    >Transaktionsanalyse</span
+                  >
                 </button>
               </div>
             </div>
@@ -274,7 +286,7 @@
             <div class="header-stress-phone">
               <div class="security-card">
                 <div class="security-summary-row no-issue-row">
-                  <div class="security-success-header">
+                  <div class="security-header-primary no-chevron">
                     <h4>Comprobaciones de seguridad</h4>
                     <span class="security-compact-summary">
                       <span class="badge success"
@@ -282,9 +294,8 @@
                       >
                     </span>
                   </div>
-                  <p class="security-success-scope">
-                    Se completaron las comprobaciones del sitio y de la
-                    transacción.
+                  <p class="security-status-source">
+                    Seguridad del sitio · Análisis de transacción
                   </p>
                 </div>
               </div>
@@ -817,6 +828,7 @@
             .length,
           warning: findings.filter((item) => item.status === "warning").length,
           unknown: findings.filter((item) => item.status === "unknown").length,
+          info: findings.filter((item) => item.status === "info").length,
         };
         return [
           {
@@ -834,29 +846,47 @@
             badgeStatus: "info",
             label: "未经验证",
           },
+          {
+            count: counts.info,
+            badgeStatus: "info",
+            label: "信息",
+          },
         ].filter((item) => item.count > 0);
       }
 
-      function renderCompactSummary(summaryItems, findings) {
+      function renderHighestSummary(summaryItems) {
         if (!summaryItems.length) return "";
-        const [primaryItem, ...remainingItems] = summaryItems;
-        const remainingFindingCount = remainingItems.reduce(
-          (total, item) => total + item.count,
-          0,
-        );
-        const isSiteOnlyUnverified =
-          findings.length === 1 &&
-          findings[0].category === "site" &&
-          findings[0].status === "unknown";
-        const primaryLabel = isSiteOnlyUnverified
-          ? "站点未经验证"
-          : `${primaryItem.label}${primaryItem.count > 1 ? ` ×${primaryItem.count}` : ""}`;
+        const [primaryItem] = summaryItems;
         return `
           <span class="security-compact-summary">
-            <span class="badge ${primaryItem.badgeStatus}">${primaryLabel}</span>
-            ${remainingFindingCount ? `<span class="security-summary-more">+${remainingFindingCount}</span>` : ""}
+            <span class="badge ${primaryItem.badgeStatus}">${primaryItem.label}</span>
           </span>
         `;
+      }
+
+      function getHighestStatusSource(findings, kind) {
+        if (!findings.length) return "";
+        const highestStatus = findings.reduce(
+          (status, finding) =>
+            statusWeight[finding.status] > statusWeight[status]
+              ? finding.status
+              : status,
+          "info",
+        );
+        const labels = {
+          site: "站点安全",
+          operation: kind === "message" ? "签名分析" : "交易分析",
+        };
+        return categoryOrder
+          .filter((category) =>
+            findings.some(
+              (finding) =>
+                finding.category === category &&
+                finding.status === highestStatus,
+            ),
+          )
+          .map((category) => labels[category])
+          .join(" · ");
       }
 
       function getSummaryAccessibilityLabel(summaryItems) {
@@ -961,12 +991,6 @@
         `;
       }
 
-      function getCompletedChecksText(kind) {
-        return kind === "message"
-          ? "站点与签名检查已完成"
-          : "站点与交易检查已完成";
-      }
-
       function renderCurrentCard(scenario) {
         const { current, assets } = scenario;
         const findings = current.findings;
@@ -974,6 +998,10 @@
         const collapsedClass =
           findings.length && !expanded ? " is-collapsed" : "";
         const summaryItems = getSummaryItems(findings);
+        const statusSourceTitle = getHighestStatusSource(
+          findings,
+          scenario.kind,
+        );
         const bodyId = `${scenario.id}-security-body`;
         const hasAddressRisk = scenario.details.some(
           (detail) => detail.badge?.risk,
@@ -988,17 +1016,18 @@
         if (shouldShowNoIssue) {
           securitySection = `
             <div class="security-summary-row no-issue-row">
-              <div class="security-success-header">
+              <div class="security-header-primary no-chevron">
                 <h4>安全检查</h4>
                 <span class="security-compact-summary">
                   <span class="badge success">未发现问题</span>
                 </span>
               </div>
-              <p class="security-success-scope">${getCompletedChecksText(scenario.kind)}</p>
+              <p class="security-status-source">${current.coverage}</p>
             </div>
           `;
         } else if (findings.length) {
           const fullSummaryLabel = getSummaryAccessibilityLabel(summaryItems);
+          const highestStatusLabel = summaryItems[0]?.label ?? "";
           securitySection = `
             <button
               class="security-trigger"
@@ -1006,11 +1035,14 @@
               data-security-toggle
               aria-expanded="${expanded}"
               aria-controls="${bodyId}"
-              aria-label="安全检查，${current.coverage}${fullSummaryLabel ? `，${fullSummaryLabel}` : ""}"
+              aria-label="安全检查，${statusSourceTitle}，最高等级 ${highestStatusLabel}${fullSummaryLabel ? `，${fullSummaryLabel}` : ""}"
             >
-              <strong class="security-trigger-title">安全检查</strong>
-              ${renderCompactSummary(summaryItems, findings)}
-              <span class="chevron" aria-hidden="true"></span>
+              <span class="security-header-primary">
+                <strong class="security-trigger-title">安全检查</strong>
+                ${renderHighestSummary(summaryItems)}
+                <span class="chevron" aria-hidden="true"></span>
+              </span>
+              <span class="security-status-source">${statusSourceTitle}</span>
             </button>
             <div class="security-body" id="${bodyId}">
               ${renderFindingGroups(findings, scenario.kind)}
@@ -1074,32 +1106,6 @@
       document.querySelector("#scenarios").innerHTML = scenarios
         .map(renderScenario)
         .join("");
-
-      function updateAdaptiveSecurityHeaders() {
-        document.querySelectorAll(".security-trigger").forEach((trigger) => {
-          const title = trigger.querySelector(".security-trigger-title");
-          trigger.classList.remove("is-stacked");
-          trigger.classList.toggle(
-            "is-stacked",
-            title.scrollWidth > title.clientWidth,
-          );
-        });
-        document
-          .querySelectorAll(".security-success-header")
-          .forEach((header) => {
-            const title = header.querySelector("h4");
-            header.classList.remove("is-stacked");
-            header.classList.toggle(
-              "is-stacked",
-              title.scrollWidth > title.clientWidth,
-            );
-          });
-      }
-
-      requestAnimationFrame(updateAdaptiveSecurityHeaders);
-      window.addEventListener("resize", () => {
-        requestAnimationFrame(updateAdaptiveSecurityHeaders);
-      });
 
       document.querySelectorAll("[data-security-toggle]").forEach((button) => {
         button.addEventListener("click", () => {
